@@ -1,0 +1,16 @@
+name: isen_aurion_client
+description: A starting point for Dart libraries or applications.
+version: 1.0.0
+# homepage: https://www.example.com
+
+environment:
+    sdk: ">=2.17.6 <3.0.0"
+
+dependencies:
+    requests: ^4.5.0
+    html: ^0.15.0
+    xpath_selector_html_parser: ^3.0.0
+
+dev_dependencies:
+    lints: ^2.0.0
+    test: ^1.16.0
