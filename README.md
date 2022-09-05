@@ -8,11 +8,9 @@ Aurion is an ERP (Enterprise Resource Planning) developed by [Auriga](https://ww
 An API (Application Programming Interface) is a way for two or more computer programs to communicate with each other. The API makes it easier to send data
 between devices and applications.
 
-Many students can testify that Aurion is not ergonomic enough and as such many
-took the initiative to make it better. [Scorpion](https://github.com/LiamAbyss/Scorpion) coded in Java, [PyAurion](https://github.com/MylowMntr/PyAurion) in Python, [Aurion-Planning_to_ICS](https://github.com/Victor-Loos/Aurion-Planning_to_ICS) also in Python, [Api Aurion](https://github.com/nicolegrimpeur/apiAurion) in Javascript are some of the many projects undertaken by students.
+Many students can testify that Aurion is not ergonomic enough and as such some took the initiative to make it better. [Scorpion](https://github.com/LiamAbyss/Scorpion) coded in Java, [PyAurion](https://github.com/MylowMntr/PyAurion) in Python, [Aurion-Planning_to_ICS](https://github.com/Victor-Loos/Aurion-Planning_to_ICS) also in Python, [Api Aurion](https://github.com/nicolegrimpeur/apiAurion) in Javascript are some of the numerous projects undertaken by students.
 
-I too took time to make it better with this. The benefit of this API is firstly
-the fact it is developed in [dart](https://dart.dev/), the base language of [flutter](https://flutter.dev/) which is used to make apps for any screen and device.
+I too took time to make it better with this. The benefit of this API is firstly the fact it is developed in [dart](https://dart.dev/), the base language of [flutter](https://flutter.dev/) which is used to make apps for any screen and device.
 
 ## Features
 
