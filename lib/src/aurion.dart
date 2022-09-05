@@ -122,7 +122,7 @@ class IsenAurionClient {
         entry['children'] = [];
       } else {
         entry['id'] = RegExp(r"form:sidebar_menuid':'([^']+)")
-            .firstMatch(attributes['onclick'])!
+            .firstMatch(node.queryXPath('/a/@onclick').attr!)!
             .group(1)!;
       }
 
@@ -130,6 +130,21 @@ class IsenAurionClient {
     }
 
     return submenus;
+  }
+
+  Future<List<Map<String, dynamic>>> getGroupsTree(
+      {String submenuId = 'submenu_299102'}) async {
+    List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
+
+    for (var child in tree) {
+      if (child.containsKey('children')) {
+        String id = child['id'];
+        print(id);
+        child['children'] = await getGroupsTree(submenuId: id);
+      }
+    }
+
+    return tree;
   }
 
   /// Login to Aurion with [username] and [password] by storing the connection
