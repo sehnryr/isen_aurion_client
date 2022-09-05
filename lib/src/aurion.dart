@@ -132,6 +132,7 @@ class IsenAurionClient {
     return submenus;
   }
 
+  /// Get the whole menu tree recursively. It takes around 20sec to make it.
   Future<List<Map<String, dynamic>>> getGroupsTree(
       {String submenuId = 'submenu_299102'}) async {
     List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
