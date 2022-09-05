@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:meta/meta.dart';
 import 'package:http/http.dart';
 import 'package:requests/requests.dart';
@@ -257,6 +260,147 @@ class IsenAurionClient {
     }
 
     return options;
+  }
+
+  /// Get the schedule with all the options checked by default.
+  Future<List<Map<String, dynamic>>> getSchedule(
+      {required String groupId,
+      List<Map>? path,
+      List<Map>? options,
+      DateTime? start,
+      DateTime? end}) async {
+    options ??= await getGroupsSelection(groupId: groupId, path: path);
+    String selection = options.map((e) => e['id']).join(',');
+
+    var payload = {
+      'form': 'form',
+      'form:largeurDivCenter': 899, // can't be less than 100
+      'form:messagesRubriqueInaccessible': null,
+      'form:search-texte': null,
+      'form:search-texte-avancer': null,
+      'form:input-expression-exacte': null,
+      'form:input-un-des-mots': null,
+      'form:input-aucun-des-mots': null,
+      'form:input-nombre-debut': null,
+      'form:input-nombre-fin': null,
+      'form:calendarDebut_input': null,
+      'form:calendarFin_input': null,
+    };
+
+    Response response =
+        await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml');
+
+    payload['javax.faces.ViewState'] = getViewState(response);
+
+    var document = parse(response.content()).documentElement!;
+    var result = document.queryXPath(
+        '//div[@id="form:dataTableFavori"]//*[starts-with(@name, "form:j_idt")]/@name');
+
+    for (var element in result.attrs) {
+      String name = element!;
+      if (element.endsWith('reflowDD')) {
+        payload[name] = '0_0';
+      } else if (element.endsWith('selection')) {
+        payload[name] = selection;
+      } else if (element.endsWith('filter')) {
+        payload[name] = null;
+      } else if (element.endsWith('checkbox')) {
+        payload[name] = List.generate(options.length, (_) => 'on');
+      }
+    }
+
+    result =
+        document.queryXPath('//div[@id="form:footerToolBar"]/button/@name');
+    payload[result.attr!] = null;
+
+    result = document.queryXPath(
+        '//div[@class="listeLangues"]//input[starts-with(@name, "form")]/@name');
+    payload[result.attr!] = null;
+    payload[result.attr!.replaceFirst(RegExp(r'_focus$'), '_input')] =
+        275805; // French: 275805, English: 251378
+
+    response = await Requests.post('$serviceUrl/faces/ChoixPlanning.xhtml',
+        queryParameters: payload);
+
+    if (!(response.headers.containsKey('location') &&
+        response.statusCode == 302)) {
+      throw ParameterNotFound('The payload might not be right.');
+    }
+
+    response = await Requests.get('$serviceUrl/faces/Planning.xhtml');
+    document = parse(response.content()).documentElement!;
+
+    String defaultParam =
+        document.queryXPath('//div[@class="schedule"]/@id').attr!;
+
+    var now = DateTime.now();
+    var endOfYear = DateTime(now.year, 7, 31, 23, 59, 59);
+    bool newSchoolYear = now.isAfter(endOfYear);
+
+    start ??= now.subtract(Duration(days: 1 * 7 + now.weekday));
+    end ??= DateTime(now.year + (newSchoolYear ? 1 : 0), 7, 31, 23, 59, 59);
+
+    payload = {
+      'javax.faces.partial.ajax': 'true',
+      'javax.faces.source': defaultParam,
+      'javax.faces.partial.execute': defaultParam,
+      'javax.faces.partial.render': defaultParam,
+      defaultParam: defaultParam,
+      '${defaultParam}_start': start.millisecondsSinceEpoch,
+      '${defaultParam}_end': end.millisecondsSinceEpoch,
+      'form': 'form',
+      'javax.faces.ViewState': getViewState(response),
+    };
+
+    response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
+        queryParameters: payload);
+
+    var events = jsonDecode(regexMatch(
+        r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
+        response.content(),
+        'Schedule could not be extracted from the body content.'));
+
+    List<Map<String, dynamic>> schedule = [];
+
+    for (var event in events) {
+      schedule.add(parseEvent(event));
+    }
+
+    return schedule;
+  }
+
+  @protected
+  Map<String, dynamic> parseEvent(Map<String, dynamic> rawEvent) {
+    if (rawEvent.length != 7) {
+      return {};
+    }
+
+    Map<String, dynamic> event = {
+      'id': int.parse(rawEvent['id']),
+      'type': rawEvent['className'], // COURS - TP - TD - EVALUATION - REUNION
+      'start': DateTime.parse(rawEvent['start']).millisecondsSinceEpoch,
+      'end': DateTime.parse(rawEvent['end']).millisecondsSinceEpoch,
+    };
+
+    String data = rawEvent['title'];
+    // https://regex101.com/r/xfG2EU/1
+    var result = RegExp(r'((?:(?<= - )|^)(?:(?! - ).)*?)(?: - |$)')
+        .allMatches(data)
+        .toList();
+
+    if (RegExp(r'\d\dh\d\d - \d\dh\d\d').hasMatch(data)) {
+      event['room'] = result[6].group(1)!;
+      event['subject'] = result[3].group(1)!;
+      event['chapter'] = result[4].group(1)!;
+      event['participants'] = result[5].group(1)!.split(' / ');
+    } else {
+      event['room'] = result[1].group(1)!;
+      event['subject'] = result[3].group(1)!;
+      event['chapter'] = result[4].group(1)!;
+      event['participants'] = result[5].group(1)!.split(' / ');
+    }
+
+    return event;
   }
 
   /// Login to Aurion with [username] and [password] by storing the connection
