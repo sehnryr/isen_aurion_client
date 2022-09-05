@@ -155,6 +155,32 @@ class IsenAurionClient {
     return tree;
   }
 
+  /// Get a more manageable tree to work with in form of paths like lists where
+  /// the furthest item is first and so on to the nearest. The elements of the
+  /// [List]s are in reverse order of request
+  Future<List<List>> getReadablePaths(
+      {String submenuId = 'submenu_299102'}) async {
+    List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
+    List<List> paths = [];
+
+    for (var node in tree) {
+      Map<String, dynamic> pathNode = {'name': node['name'], 'id': node['id']};
+
+      if (node.containsKey('children')) {
+        String id = node['id'];
+        List<List> children = await getReadablePaths(submenuId: id);
+        for (var child in children) {
+          child.add(pathNode);
+          paths.add(child);
+        }
+      } else {
+        paths.add([pathNode]);
+      }
+    }
+
+    return paths;
+  }
+
   /// Login to Aurion with [username] and [password] by storing the connection
   /// cookie with [Requests].
   ///
