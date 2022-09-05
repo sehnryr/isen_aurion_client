@@ -139,7 +139,6 @@ class IsenAurionClient {
     for (var child in tree) {
       if (child.containsKey('children')) {
         String id = child['id'];
-        print(id);
         child['children'] = await getGroupsTree(submenuId: id);
       }
     }
