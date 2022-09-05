@@ -68,9 +68,13 @@ class IsenAurionClient {
     return getFormId(response);
   }
 
-  Future<void> getGroups() async {
+  /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
+  /// as it is the first id of the groups plannings.
+  ///
+  /// Throws [ParameterNotFound] if the value couldn't be found.
+  Future<List<Map<String, dynamic>>> getSubmenu(
+      {String submenuId = 'submenu_299102'}) async {
     String url = "$serviceUrl/faces/MainMenuPage.xhtml";
-    String submenuId = 'submenu_299102'; // Groups submenuId on Aurion
 
     Map<String, dynamic> payload = {
       'javax.faces.partial.ajax': true,
@@ -90,29 +94,42 @@ class IsenAurionClient {
 
     Response response = await Requests.post(url, queryParameters: payload);
 
-    String rawGroups = regexMatch(
-        '$submenuId[^>]+>(?:<[^>]+>)*[^<]+(?:<[^>]+>){5}(.+?)</ul>',
+    String data = regexMatch(
+        r'<update id="form:sidebar"><!\[CDATA\[(.*?)\]\]>',
         response.content(),
-        "The execution parameter could not be found in the response body.");
+        "The content of the update could not be found in the response body.");
 
-    var pattern =
-        RegExp(r'<li[^>]+(submenu_\d+).+?<span[^>]+ui-menuitem-text">([^<]+)');
-    Iterable<RegExpMatch> matches = pattern.allMatches(rawGroups);
-    List<Map<String, String>> groups = [];
+    var document = parse(data).documentElement!;
+    var result =
+        document.queryXPath('//li[contains(@class, "$submenuId")]/ul/li');
 
-    for (var match in matches) {
-      var groupId = match.group(1);
-      var groupName = match.group(2);
+    List<Map<String, dynamic>> submenus = [];
 
-      if (groupId != null && groupName != null) {
-        groups.add({
-          'id': groupId,
-          'name': groupName.replaceAll(RegExp(r'Plannings'), '').trim()
-        });
+    for (var node in result.nodes) {
+      Map attributes = node.attributes;
+      bool isParent = attributes['class'].contains('ui-menu-parent');
+      String name = node
+          .queryXPath('/a/span[@class="ui-menuitem-text"]/text()')
+          .attr!
+          .replaceAll(RegExp(r'Plannings?'), '')
+          .trim();
+
+      Map<String, dynamic> entry = {'name': name};
+
+      if (isParent) {
+        entry['id'] =
+            RegExp(r'(submenu_\d+)').firstMatch(attributes['class'])!.group(1)!;
+        entry['children'] = [];
+      } else {
+        entry['id'] = RegExp(r"form:sidebar_menuid':'([^']+)")
+            .firstMatch(attributes['onclick'])!
+            .group(1)!;
       }
+
+      submenus.add(entry);
     }
 
-    print(groups);
+    return submenus;
   }
 
   /// Login to Aurion with [username] and [password] by storing the connection
