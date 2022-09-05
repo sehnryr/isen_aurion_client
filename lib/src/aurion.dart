@@ -181,6 +181,29 @@ class IsenAurionClient {
     return paths;
   }
 
+  /// Converts the groups tree to paths
+  List<List> convertTree2Paths(
+      {required List<Map> tree, bool hasParent = false}) {
+    List<List> paths = [];
+
+    for (var node in tree) {
+      Map pathNode = {'name': node['name'], 'id': node['id']};
+      if (node.containsKey('children')) {
+        String id = node['id'];
+        List<List> children =
+            convertTree2Paths(tree: node['children'], hasParent: true);
+        for (var child in children) {
+          child.add(pathNode);
+          paths.add(child);
+        }
+      } else {
+        paths.add([pathNode]);
+      }
+    }
+
+    return paths;
+  }
+
   /// Login to Aurion with [username] and [password] by storing the connection
   /// cookie with [Requests].
   ///
