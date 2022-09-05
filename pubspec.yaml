@@ -1,7 +1,7 @@
 name: isen_aurion_client
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
-# homepage: https://www.example.com
+description: A dart api that interfaces with the ERP Aurion used by the ISEN.
+version: 1.0.1
+homepage: https://github.com/sehnryr/isen_aurion_client
 
 environment:
     sdk: ">=2.17.6 <3.0.0"
@@ -10,6 +10,8 @@ dependencies:
     requests: ^4.5.0
     html: ^0.15.0
     xpath_selector_html_parser: ^3.0.0
+    http: ^0.13.5
+    meta: ^1.8.0
 
 dev_dependencies:
     lints: ^2.0.0
