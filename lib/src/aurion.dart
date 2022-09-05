@@ -22,6 +22,18 @@ class IsenAurionClient {
   // The form id that's also attached to the session
   late final int formId;
 
+  DateTime get defaultStart {
+    var now = DateTime.now();
+    return now.subtract(Duration(days: 1 * 7 + now.weekday));
+  }
+
+  DateTime get defaultEnd {
+    var now = DateTime.now();
+    var endOfYear = DateTime(now.year, 7, 31, 23, 59, 59);
+    bool newSchoolYear = now.isAfter(endOfYear);
+    return DateTime(now.year + (newSchoolYear ? 1 : 0), 7, 31, 23, 59, 59);
+  }
+
   // The whole group tree
   List<Map<String, dynamic>> groupsTree = [];
 
@@ -333,12 +345,8 @@ class IsenAurionClient {
     String defaultParam =
         document.queryXPath('//div[@class="schedule"]/@id').attr!;
 
-    var now = DateTime.now();
-    var endOfYear = DateTime(now.year, 7, 31, 23, 59, 59);
-    bool newSchoolYear = now.isAfter(endOfYear);
-
-    start ??= now.subtract(Duration(days: 1 * 7 + now.weekday));
-    end ??= DateTime(now.year + (newSchoolYear ? 1 : 0), 7, 31, 23, 59, 59);
+    start ??= defaultStart;
+    end ??= defaultEnd;
 
     payload = {
       'javax.faces.partial.ajax': 'true',
