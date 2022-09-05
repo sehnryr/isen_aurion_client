@@ -19,6 +19,9 @@ class IsenAurionClient {
   // The form id that's also attached to the session
   late final int formId;
 
+  // The whole group tree
+  List<Map<String, dynamic>> groupsTree = [];
+
   /// Get the viewstate value from [response].
   /// Needed for fetching the planning.
   ///
@@ -134,14 +137,19 @@ class IsenAurionClient {
 
   /// Get the whole menu tree recursively. It takes around 20sec to make it.
   Future<List<Map<String, dynamic>>> getGroupsTree(
-      {String submenuId = 'submenu_299102'}) async {
+      {String submenuId = 'submenu_299102', bool hasParent = false}) async {
     List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
 
     for (var child in tree) {
       if (child.containsKey('children')) {
         String id = child['id'];
-        child['children'] = await getGroupsTree(submenuId: id);
+        child['children'] = await getGroupsTree(submenuId: id, hasParent: true);
       }
+    }
+
+    // Set the groups tree every time the initial [getGroupsTree] is called.
+    if (!hasParent) {
+      groupsTree = tree;
     }
 
     return tree;
