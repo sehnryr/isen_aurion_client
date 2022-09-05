@@ -161,24 +161,7 @@ class IsenAurionClient {
   Future<List<List>> getReadablePaths(
       {String submenuId = 'submenu_299102'}) async {
     List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
-    List<List> paths = [];
-
-    for (var node in tree) {
-      Map<String, dynamic> pathNode = {'name': node['name'], 'id': node['id']};
-
-      if (node.containsKey('children')) {
-        String id = node['id'];
-        List<List> children = await getReadablePaths(submenuId: id);
-        for (var child in children) {
-          child.add(pathNode);
-          paths.add(child);
-        }
-      } else {
-        paths.add([pathNode]);
-      }
-    }
-
-    return paths;
+    return convertTree2Paths(tree: tree);
   }
 
   /// Converts the groups tree to paths
