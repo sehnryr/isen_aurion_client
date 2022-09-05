@@ -185,6 +185,80 @@ class IsenAurionClient {
     return paths;
   }
 
+  /// Get or load the group tree
+  Future<List<Map<String, dynamic>>> getOrLoadGroupTree(
+      {String submenuId = 'submenu_299102'}) async {
+    return groupsTree.isEmpty
+        ? await getGroupsTree(submenuId: submenuId)
+        : groupsTree;
+  }
+
+  /// Get a [List] of the checkboxes before accessing the schedule.
+  Future<List<Map<String, dynamic>>> getGroupsSelection(
+      {required String groupId, List<Map>? path}) async {
+    // return if [groupId] is not in [path]
+    if (path != null &&
+        path
+            .firstWhere((pathNode) => pathNode['id'] == groupId,
+                orElse: () => {})
+            .isEmpty) {
+      print('test');
+      return [];
+    } else if (path != null &&
+        path.isNotEmpty &&
+        (groupsTree.isEmpty ||
+            convertTree2Paths(tree: groupsTree).contains(path))) {
+      path = path.reversed.toList();
+      path.removeLast();
+      for (var pathNode in path) {
+        await getSubmenu();
+        await getSubmenu(submenuId: pathNode['id']);
+      }
+    } else {
+      await getOrLoadGroupTree();
+    }
+
+    Map<String, dynamic> payload = {
+      'form': 'form',
+      'form:sauvegarde': null,
+      'form:largeurDivCenter': null,
+      'form:j_idt820_focus': null,
+      'form:j_idt820_input': null,
+      'form:sidebar': 'form:sidebar',
+      'form:j_idt805:j_idt808_view': 'basicDay',
+      'javax.faces.ViewState': viewState,
+      'form:sidebar_menuid': groupId
+    };
+
+    String url = '$serviceUrl/faces/MainMenuPage.xhtml';
+    Response response = await Requests.post(url, queryParameters: payload);
+
+    if (!response.headers.containsKey('location')) {
+      throw ParameterNotFound(
+          'The request might have failed. Has the menu been loaded?');
+    }
+
+    response = await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml');
+
+    var document = parse(response.content()).documentElement!;
+
+    var selectionOptions =
+        document.queryXPath('//div[@id="form:dataTableFavori"]//tbody/tr');
+
+    List<Map<String, dynamic>> options = [];
+
+    for (var element in selectionOptions.nodes) {
+      String id = element.attributes['data-rk']!;
+      String name = element
+          .queryXPath('//span[contains(@class, "preformatted")]/text()')
+          .attr!;
+
+      options.add({'id': id, 'name': name});
+    }
+
+    return options;
+  }
+
   /// Login to Aurion with [username] and [password] by storing the connection
   /// cookie with [Requests].
   ///
