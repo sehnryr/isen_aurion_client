@@ -165,16 +165,14 @@ class IsenAurionClient {
   }
 
   /// Converts the groups tree to paths
-  List<List> convertTree2Paths(
-      {required List<Map> tree, bool hasParent = false}) {
+  List<List> convertTree2Paths({required List<Map> tree}) {
     List<List> paths = [];
 
     for (var node in tree) {
       Map pathNode = {'name': node['name'], 'id': node['id']};
       if (node.containsKey('children')) {
         String id = node['id'];
-        List<List> children =
-            convertTree2Paths(tree: node['children'], hasParent: true);
+        List<List> children = convertTree2Paths(tree: node['children']);
         for (var child in children) {
           child.add(pathNode);
           paths.add(child);
