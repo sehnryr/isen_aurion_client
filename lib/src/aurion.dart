@@ -286,7 +286,7 @@ class IsenAurionClient {
 
     var payload = {
       'form': 'form',
-      'form:largeurDivCenter': 899, // can't be less than 100
+      'form:largeurDivCenter': 100, // can't be less than 100
       'form:messagesRubriqueInaccessible': null,
       'form:search-texte': null,
       'form:search-texte-avancer': null,
@@ -385,7 +385,8 @@ class IsenAurionClient {
 
     Map<String, dynamic> event = {
       'id': int.parse(rawEvent['id']),
-      'type': rawEvent['className'], // COURS - TP - TD - EVALUATION - REUNION
+      'type': rawEvent[
+          'className'], // COURS - TP - TD - EVALUATION - REUNION - CONGES
       'start': DateTime.parse(rawEvent['start']).millisecondsSinceEpoch,
       'end': DateTime.parse(rawEvent['end']).millisecondsSinceEpoch,
     };
@@ -409,6 +410,71 @@ class IsenAurionClient {
     }
 
     return event;
+  }
+
+  Future<List<Map<String, dynamic>>> getUserSchedule({
+    DateTime? start,
+    DateTime? end,
+  }) async {
+    await getSubmenu(submenuId: 'submenu_291906'); // Schooling submenu
+
+    Map<String, dynamic> payload = {
+      'form': 'form',
+      'form:sauvegarde': null,
+      'form:largeurDivCenter': null,
+      'form:j_idt820_focus': null,
+      'form:j_idt820_input': null,
+      'form:sidebar': 'form:sidebar',
+      'form:j_idt805:j_idt808_view': 'basicDay',
+      'javax.faces.ViewState': viewState,
+      'form:sidebar_menuid': '1_3'
+    };
+
+    Response response = await Requests.post(
+        '$serviceUrl/faces/MainMenuPage.xhtml',
+        queryParameters: payload);
+
+    if (!(response.headers.containsKey('location') &&
+        response.statusCode == 302)) {
+      throw ParameterNotFound('The payload might not be right.');
+    }
+
+    response = await Requests.get('$serviceUrl/faces/Planning.xhtml');
+    var document = parse(response.content()).documentElement!;
+
+    String defaultParam =
+        document.queryXPath('//div[@class="schedule"]/@id').attr!;
+
+    start ??= defaultStart;
+    end ??= defaultEnd;
+
+    payload = {
+      'javax.faces.partial.ajax': 'true',
+      'javax.faces.source': defaultParam,
+      'javax.faces.partial.execute': defaultParam,
+      'javax.faces.partial.render': defaultParam,
+      defaultParam: defaultParam,
+      '${defaultParam}_start': start.millisecondsSinceEpoch,
+      '${defaultParam}_end': end.millisecondsSinceEpoch,
+      'form': 'form',
+      'javax.faces.ViewState': getViewState(response),
+    };
+
+    response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
+        queryParameters: payload);
+
+    var events = jsonDecode(regexMatch(
+        r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
+        response.content(),
+        'Schedule could not be extracted from the body content.'));
+
+    List<Map<String, dynamic>> schedule = [];
+
+    for (var event in events) {
+      schedule.add(parseEvent(event));
+    }
+
+    return schedule;
   }
 
   /// Login to Aurion with [username] and [password] by storing the connection
