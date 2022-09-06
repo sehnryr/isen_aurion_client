@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:meta/meta.dart';
 import 'package:http/http.dart';
@@ -186,7 +185,6 @@ class IsenAurionClient {
     for (var node in tree) {
       Map pathNode = {'name': node['name'], 'id': node['id']};
       if (node.containsKey('children')) {
-        String id = node['id'];
         List<List> children = convertTree2Paths(tree: node['children']);
         for (var child in children) {
           child.add(pathNode);
