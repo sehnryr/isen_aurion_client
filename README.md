@@ -1,7 +1,8 @@
 # ISEN Aurion API
 
-![GitHub repo size](https://img.shields.io/github/repo-size/sehnryr/isen_aurion_client)
-![GitHub](https://img.shields.io/github/license/sehnryr/isen_aurion_client)
+[![Version](https://img.shields.io/pub/v/isen_aurion_client?include_prereleases)](https://pub.dev/packages/isen_aurion_client)
+[![GitHub repo size](https://img.shields.io/github/repo-size/sehnryr/isen_aurion_client)](https://github.com/sehnryr/isen_aurion_client)
+[![GitHub](https://img.shields.io/github/license/sehnryr/isen_aurion_client)](https://github.com/sehnryr/isen_aurion_client/blob/master/LICENSE)
 
 Aurion is an ERP (Enterprise Resource Planning) developed by [Auriga](https://www.auriga.fr/) used by the students of ISEN (Higher Institute for Electronics and Digital Training) to access their plannings, scores and some more information.
 
