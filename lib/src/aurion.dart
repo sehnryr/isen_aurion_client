@@ -62,7 +62,7 @@ class IsenAurionClient {
   /// Throws a [ParameterNotFound] if not found.
   @protected
   Future<String> fetchViewState() async {
-    Response response = await Requests.get(serviceUrl);
+    Response response = await Requests.get(serviceUrl, withCredentials: true);
     return getViewState(response);
   }
 
@@ -83,7 +83,7 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if the value was not found.
   @protected
   Future<int> fetchFormId() async {
-    Response response = await Requests.get(serviceUrl);
+    Response response = await Requests.get(serviceUrl, withCredentials: true);
     return getFormId(response);
   }
 
@@ -111,7 +111,8 @@ class IsenAurionClient {
       'webscolaapp.Sidebar.ID_SUBMENU': submenuId
     };
 
-    Response response = await Requests.post(url, queryParameters: payload);
+    Response response = await Requests.post(url,
+        queryParameters: payload, withCredentials: true);
 
     String data = regexMatch(
         r'<update id="form:sidebar"><!\[CDATA\[(.*?)\]\]>',
@@ -246,14 +247,16 @@ class IsenAurionClient {
     };
 
     String url = '$serviceUrl/faces/MainMenuPage.xhtml';
-    Response response = await Requests.post(url, queryParameters: payload);
+    Response response = await Requests.post(url,
+        queryParameters: payload, withCredentials: true);
 
     if (!response.headers.containsKey('location')) {
       throw ParameterNotFound(
           'The request might have failed. Has the menu been loaded?');
     }
 
-    response = await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml');
+    response = await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml',
+        withCredentials: true);
 
     var document = parse(response.content()).documentElement!;
 
@@ -299,8 +302,9 @@ class IsenAurionClient {
       'form:calendarFin_input': null,
     };
 
-    Response response =
-        await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml');
+    Response response = await Requests.get(
+        '$serviceUrl/faces/ChoixPlanning.xhtml',
+        withCredentials: true);
 
     payload['javax.faces.ViewState'] = getViewState(response);
 
@@ -332,14 +336,15 @@ class IsenAurionClient {
         275805; // French: 275805, English: 251378
 
     response = await Requests.post('$serviceUrl/faces/ChoixPlanning.xhtml',
-        queryParameters: payload);
+        queryParameters: payload, withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
         response.statusCode == 302)) {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    response = await Requests.get('$serviceUrl/faces/Planning.xhtml');
+    response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
+        withCredentials: true);
     document = parse(response.content()).documentElement!;
 
     String defaultParam =
@@ -361,7 +366,7 @@ class IsenAurionClient {
     };
 
     response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
-        queryParameters: payload);
+        queryParameters: payload, withCredentials: true);
 
     var events = jsonDecode(regexMatch(
         r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
@@ -432,14 +437,16 @@ class IsenAurionClient {
 
     Response response = await Requests.post(
         '$serviceUrl/faces/MainMenuPage.xhtml',
-        queryParameters: payload);
+        queryParameters: payload,
+        withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
         response.statusCode == 302)) {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    response = await Requests.get('$serviceUrl/faces/Planning.xhtml');
+    response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
+        withCredentials: true);
     var document = parse(response.content()).documentElement!;
 
     String defaultParam =
@@ -461,7 +468,7 @@ class IsenAurionClient {
     };
 
     response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
-        queryParameters: payload);
+        queryParameters: payload, withCredentials: true);
 
     var events = jsonDecode(regexMatch(
         r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
@@ -485,14 +492,16 @@ class IsenAurionClient {
     String loginUrl = "$serviceUrl/login";
 
     Response response = await Requests.post(loginUrl,
-        body: {'username': username, 'password': password});
+        body: {'username': username, 'password': password},
+        withCredentials: true);
 
     if (!response.headers.containsKey('location')) {
       throw AuthenticationException('The username or password might be wrong.');
     }
 
     // Retrieve the session attached variables
-    Response dummyResponse = await Requests.get(serviceUrl);
+    Response dummyResponse =
+        await Requests.get(serviceUrl, withCredentials: true);
 
     viewState = getViewState(dummyResponse);
     formId = getFormId(dummyResponse);
