@@ -7,7 +7,10 @@ environment:
     sdk: ">=2.17.6 <3.0.0"
 
 dependencies:
-    requests: ^4.5.0
+    requests:
+        git:
+            url: https://github.com/jossef/requests.git
+            ref: cors-credentials
     html: ^0.15.0
     xpath_selector_html_parser: ^3.0.0
     http: ^0.13.5
