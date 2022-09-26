@@ -495,7 +495,7 @@ class IsenAurionClient {
         body: {'username': username, 'password': password},
         withCredentials: true);
 
-    if (!response.headers.containsKey('location') ||
+    if (!response.headers.containsKey('location') &&
         !RegExp(r"<title>Page d'accueil").hasMatch(response.content())) {
       throw AuthenticationException('The username or password might be wrong.');
     }
