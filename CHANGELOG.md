@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.2.2](https://github.com/sehnryr/isen_aurion_client/tree/v1.2.2) (2022-09-26)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v1.2.1...v1.2.2)
+
+**Merged pull requests:**
+
+- fix login condition [\#5](https://github.com/sehnryr/isen_aurion_client/pull/5) ([sehnryr](https://github.com/sehnryr))
+
 ## [v1.2.1](https://github.com/sehnryr/isen_aurion_client/tree/v1.2.1) (2022-09-26)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v1.2.0...v1.2.1)
