@@ -1,5 +1,13 @@
 # Changelog
 
+## [v1.2.0](https://github.com/sehnryr/isen_aurion_client/tree/v1.2.0) (2022-09-26)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v1.1.0...v1.2.0)
+
+**Merged pull requests:**
+
+- add withCredentials parameter [\#3](https://github.com/sehnryr/isen_aurion_client/pull/3) ([sehnryr](https://github.com/sehnryr))
+
 ## [v1.1.0](https://github.com/sehnryr/isen_aurion_client/tree/v1.1.0) (2022-09-18)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v1.0.4...v1.1.0)
