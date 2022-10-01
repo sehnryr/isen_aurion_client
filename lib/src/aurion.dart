@@ -339,12 +339,15 @@ class IsenAurionClient {
         queryParameters: payload, withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
-        response.statusCode == 302)) {
+            response.statusCode == 302) &&
+        RegExp(r"'form:headerSubview:j_idt40'}").hasMatch(response.content())) {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
-        withCredentials: true);
+    if (response.statusCode == 302) {
+      response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
+          withCredentials: true);
+    }
     document = parse(response.content()).documentElement!;
 
     String defaultParam =
@@ -441,12 +444,15 @@ class IsenAurionClient {
         withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
-        response.statusCode == 302)) {
+            response.statusCode == 302) &&
+        !RegExp(r"<title>Mon planning").hasMatch(response.content())) {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
-        withCredentials: true);
+    if (response.statusCode == 302) {
+      response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
+          withCredentials: true);
+    }
     var document = parse(response.content()).documentElement!;
 
     String defaultParam =
