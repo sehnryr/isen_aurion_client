@@ -8,7 +8,6 @@ import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
 import 'package:isen_aurion_client/src/common.dart';
 import 'package:isen_aurion_client/src/error.dart';
-import 'package:isen_aurion_client/event.dart';
 
 class IsenAurionClient {
   IsenAurionClient({required this.serviceUrl});
@@ -279,10 +278,7 @@ class IsenAurionClient {
   }
 
   /// Get the schedule with all the options checked by default.
-  ///
-  /// Throws [ParameterNotFound] if Aurion's schedule is not in the
-  /// expected format.
-  Future<List<Event>> getSchedule(
+  Future<List<Map<String, dynamic>>> getSchedule(
       {required String groupId,
       List<Map>? path,
       List<Map>? options,
@@ -375,25 +371,56 @@ class IsenAurionClient {
     response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
         queryParameters: payload, withCredentials: true);
 
-    var eventsJson = jsonDecode(regexMatch(
+    var events = jsonDecode(regexMatch(
         r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
         response.content(),
         'Schedule could not be extracted from the body content.'));
 
-    List<Event> schedule = [];
+    List<Map<String, dynamic>> schedule = [];
 
-    for (var eventJson in eventsJson) {
-      schedule.add(parseEvent(eventJson));
+    for (var event in events) {
+      schedule.add(parseEvent(event));
     }
 
     return schedule;
   }
 
-  /// Get the user's schedule with all the options checked by default.
-  ///
-  /// Throws [ParameterNotFound] if Aurion's schedule is not in the
-  /// expected format.
-  Future<List<Event>> getUserSchedule({
+  @protected
+  Map<String, dynamic> parseEvent(Map<String, dynamic> rawEvent) {
+    if (rawEvent.length != 7) {
+      return {};
+    }
+
+    Map<String, dynamic> event = {
+      'id': int.parse(rawEvent['id']),
+      'type': rawEvent[
+          'className'], // COURS - TP - TD - EVALUATION - REUNION - CONGES
+      'start': DateTime.parse(rawEvent['start']).millisecondsSinceEpoch,
+      'end': DateTime.parse(rawEvent['end']).millisecondsSinceEpoch,
+    };
+
+    String data = rawEvent['title'];
+    // https://regex101.com/r/xfG2EU/1
+    var result = RegExp(r'((?:(?<= - )|^)(?:(?! - ).)*?)(?: - |$)')
+        .allMatches(data)
+        .toList();
+
+    if (RegExp(r'\d\dh\d\d - \d\dh\d\d').hasMatch(data)) {
+      event['room'] = result[6].group(1)!;
+      event['subject'] = result[3].group(1)!;
+      event['chapter'] = result[4].group(1)!;
+      event['participants'] = result[5].group(1)!.split(' / ');
+    } else {
+      event['room'] = result[1].group(1)!;
+      event['subject'] = result[3].group(1)!;
+      event['chapter'] = result[4].group(1)!;
+      event['participants'] = result[5].group(1)!.split(' / ');
+    }
+
+    return event;
+  }
+
+  Future<List<Map<String, dynamic>>> getUserSchedule({
     DateTime? start,
     DateTime? end,
   }) async {
@@ -449,15 +476,15 @@ class IsenAurionClient {
     response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
         queryParameters: payload, withCredentials: true);
 
-    var eventsJson = jsonDecode(regexMatch(
+    var events = jsonDecode(regexMatch(
         r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
         response.content(),
         'Schedule could not be extracted from the body content.'));
 
-    List<Event> schedule = [];
+    List<Map<String, dynamic>> schedule = [];
 
-    for (var eventJson in eventsJson) {
-      schedule.add(parseEvent(eventJson));
+    for (var event in events) {
+      schedule.add(parseEvent(event));
     }
 
     return schedule;

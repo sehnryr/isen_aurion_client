@@ -1,4 +1,4 @@
-import 'package:isen_aurion_client/client.dart';
+import 'package:isen_aurion_client/isen_aurion_client.dart';
 
 void main(List<String> args) async {
   String serviceUrl = 'https://web.isen-ouest.fr/webAurion/';
