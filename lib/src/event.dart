@@ -1,15 +1,27 @@
+import 'package:json_annotation/json_annotation.dart';
+
+part 'event.g.dart';
+
 /// Possible event types
 enum EventType {
+  @JsonValue("course")
   course,
+  @JsonValue("exam")
   exam,
+  @JsonValue("leave")
   leave,
+  @JsonValue("meeting")
   meeting,
+  @JsonValue("practicalWork")
   practicalWork,
+  @JsonValue("supervisedWork")
   supervisedWork,
+  @JsonValue("undefined")
   undefined,
 }
 
 /// Schedule event class.
+@JsonSerializable()
 class Event {
   final int id;
   final EventType type;
@@ -60,4 +72,7 @@ class Event {
         return EventType.undefined;
     }
   }
+
+  factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
+  Map<String, dynamic> toJson() => _$EventToJson(this);
 }
