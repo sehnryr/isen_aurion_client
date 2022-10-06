@@ -33,4 +33,10 @@ class Event {
 
   @override
   String toString() => subject;
+
+  DateTime get day => DateTime(
+        start.year,
+        start.month,
+        start.day,
+      );
 }
