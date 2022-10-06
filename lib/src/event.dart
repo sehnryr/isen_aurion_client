@@ -25,9 +25,7 @@ enum EventType {
 class Event {
   final int id;
   final EventType type;
-  @JsonKey(fromJson: _dateFromJson, toJson: _dateToJson)
   final DateTime start;
-  @JsonKey(fromJson: _dateFromJson, toJson: _dateToJson)
   final DateTime end;
   final String room;
   final String subject;
@@ -56,8 +54,4 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) => _$EventFromJson(json);
   Map<String, dynamic> toJson() => _$EventToJson(this);
-
-  static DateTime _dateFromJson(int timestamp) =>
-      DateTime.fromMillisecondsSinceEpoch(timestamp);
-  static int _dateToJson(DateTime dateTime) => dateTime.millisecondsSinceEpoch;
 }
