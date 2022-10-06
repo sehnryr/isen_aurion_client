@@ -397,9 +397,9 @@ class IsenAurionClient {
 
     Map<String, dynamic> eventJson = {
       'id': int.parse(rawEvent['id']),
-      'type': Event.mapType(rawEvent['className']),
-      'start': DateTime.parse(rawEvent['start']),
-      'end': DateTime.parse(rawEvent['end']),
+      'type': Event.mapType(rawEvent['className']).name,
+      'start': rawEvent['start'],
+      'end': rawEvent['end'],
     };
 
     String data = rawEvent['title'];
