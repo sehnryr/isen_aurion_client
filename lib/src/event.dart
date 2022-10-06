@@ -39,4 +39,25 @@ class Event {
         start.month,
         start.day,
       );
+
+  /// Gets the [EventType] of a [String].
+  static EventType mapType(String rawType) {
+    switch (rawType) {
+      case "CONGES":
+        return EventType.leave;
+      case "COURS":
+        return EventType.course;
+      case "est-epreuve":
+      case "EVALUATION":
+        return EventType.exam;
+      case "REUNION":
+        return EventType.meeting;
+      case "TD":
+        return EventType.supervisedWork;
+      case "TP":
+        return EventType.practicalWork;
+      default:
+        return EventType.undefined;
+    }
+  }
 }
