@@ -389,40 +389,6 @@ class IsenAurionClient {
     return schedule;
   }
 
-  @protected
-  Event? parseEvent(Map<String, dynamic> rawEvent) {
-    if (rawEvent.length != 7) {
-      return null;
-    }
-
-    Map<String, dynamic> eventJson = {
-      'id': int.parse(rawEvent['id']),
-      'type': Event.mapType(rawEvent['className']).name,
-      'start': rawEvent['start'],
-      'end': rawEvent['end'],
-    };
-
-    String data = rawEvent['title'];
-    // https://regex101.com/r/xfG2EU/1
-    var result = RegExp(r'((?:(?<= - )|^)(?:(?! - ).)*?)(?: - |$)')
-        .allMatches(data)
-        .toList();
-
-    if (RegExp(r'\d\dh\d\d - \d\dh\d\d').hasMatch(data)) {
-      eventJson['room'] = result[6].group(1)!;
-      eventJson['subject'] = result[3].group(1)!;
-      eventJson['chapter'] = result[4].group(1)!;
-      eventJson['participants'] = result[5].group(1)!.split(' / ');
-    } else {
-      eventJson['room'] = result[1].group(1)!;
-      eventJson['subject'] = result[3].group(1)!;
-      eventJson['chapter'] = result[4].group(1)!;
-      eventJson['participants'] = result[5].group(1)!.split(' / ');
-    }
-
-    return Event.fromJson(eventJson);
-  }
-
   Future<List<Event>> getUserSchedule({
     DateTime? start,
     DateTime? end,
