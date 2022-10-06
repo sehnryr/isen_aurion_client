@@ -12,9 +12,11 @@ String regexMatch(String source, String input, String? errorMessage) {
 }
 
 /// Parses Aurion's return schedule format to a [List] of [Event].
-Event? parseEvent(Map<String, dynamic> rawEvent) {
+///
+/// Throws [ParameterNotFound] if the schedule is not in the expected format.
+Event parseEvent(Map<String, dynamic> rawEvent) {
   if (rawEvent.length != 7) {
-    return null;
+    throw ParameterNotFound("Event is not in the expected format.");
   }
 
   Map<String, dynamic> eventJson = {

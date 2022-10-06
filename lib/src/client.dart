@@ -279,6 +279,9 @@ class IsenAurionClient {
   }
 
   /// Get the schedule with all the options checked by default.
+  ///
+  /// Throws [ParameterNotFound] if Aurion's schedule is not in the
+  /// expected format.
   Future<List<Event>> getSchedule(
       {required String groupId,
       List<Map>? path,
@@ -380,15 +383,16 @@ class IsenAurionClient {
     List<Event> schedule = [];
 
     for (var eventJson in eventsJson) {
-      Event? event = parseEvent(eventJson);
-      if (event != null) {
-        schedule.add(event);
-      }
+      schedule.add(parseEvent(eventJson));
     }
 
     return schedule;
   }
 
+  /// Get the user's schedule with all the options checked by default.
+  ///
+  /// Throws [ParameterNotFound] if Aurion's schedule is not in the
+  /// expected format.
   Future<List<Event>> getUserSchedule({
     DateTime? start,
     DateTime? end,
@@ -453,10 +457,7 @@ class IsenAurionClient {
     List<Event> schedule = [];
 
     for (var eventJson in eventsJson) {
-      Event? event = parseEvent(eventJson);
-      if (event != null) {
-        schedule.add(event);
-      }
+      schedule.add(parseEvent(eventJson));
     }
 
     return schedule;
