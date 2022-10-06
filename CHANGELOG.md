@@ -1,5 +1,15 @@
 # Changelog
 
+## [v2.0.0](https://github.com/sehnryr/isen_aurion_client/tree/v2.0.0) (2022-10-06)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.0.0-alpha.2...v2.0.0)
+
+**Merged pull requests:**
+
+- feat: create and implement `Event` class [\#8](https://github.com/sehnryr/isen_aurion_client/pull/8) ([sehnryr](https://github.com/sehnryr))
+- Revert "feat: create and implement `Event` class" [\#7](https://github.com/sehnryr/isen_aurion_client/pull/7) ([sehnryr](https://github.com/sehnryr))
+- feat: create and implement `Event` class [\#6](https://github.com/sehnryr/isen_aurion_client/pull/6) ([sehnryr](https://github.com/sehnryr))
+
 ## [v2.0.0-alpha.2](https://github.com/sehnryr/isen_aurion_client/tree/v2.0.0-alpha.2) (2022-10-06)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.0.0-alpha.1...v2.0.0-alpha.2)
