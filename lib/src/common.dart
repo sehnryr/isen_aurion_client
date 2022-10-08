@@ -27,21 +27,23 @@ Event parseEvent(Map<String, dynamic> rawEvent) {
   };
 
   String data = rawEvent['title'];
-  // https://regex101.com/r/xfG2EU/1
-  var result = RegExp(r'((?:(?<= - )|^)(?:(?! - ).)*?)(?: - |$)')
-      .allMatches(data)
-      .toList();
+  var result = data.split(' - ');
+
+  if (result.length != 7) {
+    throw Exception(
+        'Event is not in the expected format. Could not be parsed.');
+  }
 
   if (RegExp(r'\d\dh\d\d - \d\dh\d\d').hasMatch(data)) {
-    eventJson['room'] = result[6].group(1)!;
-    eventJson['subject'] = result[3].group(1)!;
-    eventJson['chapter'] = result[4].group(1)!;
-    eventJson['participants'] = result[5].group(1)!.split(' / ');
+    eventJson['room'] = result[6];
+    eventJson['subject'] = result[3];
+    eventJson['chapter'] = result[4];
+    eventJson['participants'] = result[5].split(' / ');
   } else {
-    eventJson['room'] = result[1].group(1)!;
-    eventJson['subject'] = result[3].group(1)!;
-    eventJson['chapter'] = result[4].group(1)!;
-    eventJson['participants'] = result[5].group(1)!.split(' / ');
+    eventJson['room'] = result[1];
+    eventJson['subject'] = result[3];
+    eventJson['chapter'] = result[4];
+    eventJson['participants'] = result[5].split(' / ');
   }
 
   return Event.fromJson(eventJson);
