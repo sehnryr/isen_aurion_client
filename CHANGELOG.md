@@ -1,5 +1,17 @@
 # Changelog
 
+## [v2.2.1](https://github.com/sehnryr/isen_aurion_client/tree/v2.2.1) (2022-10-08)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.2.0...v2.2.1)
+
+**Fixed bugs:**
+
+- Safari doesn't support regex lookahead and behind [\#9](https://github.com/sehnryr/isen_aurion_client/issues/9)
+
+**Merged pull requests:**
+
+- fix\(\#9\): replace overcomplicated regex for a simple split [\#10](https://github.com/sehnryr/isen_aurion_client/pull/10) ([sehnryr](https://github.com/sehnryr))
+
 ## [v2.2.0](https://github.com/sehnryr/isen_aurion_client/tree/v2.2.0) (2022-10-06)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.1.0...v2.2.0)
