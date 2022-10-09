@@ -393,6 +393,7 @@ class IsenAurionClient {
   /// expected format.
   Future<List<Event>> getUserSchedule({
     String submenuId = 'submenu_291906',
+    String submenuItemId = '1_3', // form:sidebar_menuid
     DateTime? start,
     DateTime? end,
   }) async {
@@ -407,7 +408,7 @@ class IsenAurionClient {
       'form:sidebar': 'form:sidebar',
       'form:j_idt805:j_idt808_view': 'basicDay',
       'javax.faces.ViewState': viewState,
-      'form:sidebar_menuid': '1_3'
+      'form:sidebar_menuid': submenuItemId,
     };
 
     Response response = await Requests.post(
