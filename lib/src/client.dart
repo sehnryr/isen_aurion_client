@@ -211,8 +211,11 @@ class IsenAurionClient {
   }
 
   /// Get a [List] of the checkboxes before accessing the schedule.
-  Future<List<Map<String, dynamic>>> getGroupsSelection(
-      {required String groupId, List<Map>? path}) async {
+  Future<List<Map<String, dynamic>>> getGroupsSelection({
+    required String groupId,
+    List<Map>? path,
+    String submenuId = 'submenu_299102',
+  }) async {
     // return if [groupId] is not in [path]
     if (path != null &&
         path
@@ -230,7 +233,7 @@ class IsenAurionClient {
         await getSubmenu(submenuId: pathNode['id']);
       }
     } else {
-      await getOrLoadGroupTree();
+      await getOrLoadGroupTree(submenuId: submenuId);
     }
 
     Map<String, dynamic> payload = {
@@ -280,13 +283,20 @@ class IsenAurionClient {
   ///
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
-  Future<List<Event>> getSchedule(
-      {required String groupId,
-      List<Map>? path,
-      List<Map>? options,
-      DateTime? start,
-      DateTime? end}) async {
-    options ??= await getGroupsSelection(groupId: groupId, path: path);
+  Future<List<Event>> getSchedule({
+    required String groupId,
+    List<Map>? path,
+    List<Map>? options,
+    DateTime? start,
+    DateTime? end,
+    String submenuId = 'submenu_299102',
+    int languageCode = 275805, // French: 275805, English: 251378 for ISEN Ouest
+  }) async {
+    options ??= await getGroupsSelection(
+      groupId: groupId,
+      path: path,
+      submenuId: submenuId,
+    );
     String selection = options.map((e) => e['id']).join(',');
 
     var payload = {
@@ -335,7 +345,7 @@ class IsenAurionClient {
         '//div[@class="listeLangues"]//input[starts-with(@name, "form")]/@name');
     payload[result.attr!] = null;
     payload[result.attr!.replaceFirst(RegExp(r'_focus$'), '_input')] =
-        275805; // French: 275805, English: 251378
+        languageCode;
 
     response = await Requests.post('$serviceUrl/faces/ChoixPlanning.xhtml',
         queryParameters: payload, withCredentials: true);
