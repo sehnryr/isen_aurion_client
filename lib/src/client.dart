@@ -392,10 +392,11 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
   Future<List<Event>> getUserSchedule({
+    String submenuId = 'submenu_291906',
     DateTime? start,
     DateTime? end,
   }) async {
-    await getSubmenu(submenuId: 'submenu_291906'); // Schooling submenu
+    await getSubmenu(submenuId: submenuId); // Schooling submenu
 
     Map<String, dynamic> payload = {
       'form': 'form',
