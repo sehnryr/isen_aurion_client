@@ -219,7 +219,6 @@ class IsenAurionClient {
             .firstWhere((pathNode) => pathNode['id'] == groupId,
                 orElse: () => {})
             .isEmpty) {
-      print('test');
       return [];
     } else if (path != null &&
         path.isNotEmpty &&
