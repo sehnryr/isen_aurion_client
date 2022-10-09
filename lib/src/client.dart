@@ -227,7 +227,6 @@ class IsenAurionClient {
       path = path.reversed.toList();
       path.removeLast();
       for (var pathNode in path) {
-        await getSubmenu();
         await getSubmenu(submenuId: pathNode['id']);
       }
     } else {
