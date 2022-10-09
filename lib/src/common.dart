@@ -29,6 +29,15 @@ Event parseEvent(Map<String, dynamic> rawEvent) {
   String data = rawEvent['title'];
   var result = data.split(' - ');
 
+  // if the chapter contains ' - ' it will be joined.
+  if (result.length == 8) {
+    var start = result.sublist(0, 4);
+    result = result.sublist(4).reversed.toList();
+    var end = result.sublist(0, 2).reversed.toList();
+    result = result.sublist(2).reversed.toList();
+    result = start + [result.join(' - ')] + end;
+  }
+
   if (result.length != 7) {
     throw Exception(
         'Event is not in the expected format. Could not be parsed.');
