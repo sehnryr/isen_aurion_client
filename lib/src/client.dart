@@ -178,7 +178,7 @@ class IsenAurionClient {
   /// [List]s are in reverse order of request
   Future<List<List>> getReadablePaths(
       {String submenuId = 'submenu_299102'}) async {
-    List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
+    List<Map<String, dynamic>> tree = await getGroupsTree(submenuId: submenuId);
     return convertTree2Paths(tree: tree);
   }
 
@@ -219,7 +219,6 @@ class IsenAurionClient {
             .firstWhere((pathNode) => pathNode['id'] == groupId,
                 orElse: () => {})
             .isEmpty) {
-      print('test');
       return [];
     } else if (path != null &&
         path.isNotEmpty &&
@@ -228,7 +227,6 @@ class IsenAurionClient {
       path = path.reversed.toList();
       path.removeLast();
       for (var pathNode in path) {
-        await getSubmenu();
         await getSubmenu(submenuId: pathNode['id']);
       }
     } else {
@@ -394,10 +392,12 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
   Future<List<Event>> getUserSchedule({
+    String submenuId = 'submenu_291906',
+    String submenuItemId = '1_3', // form:sidebar_menuid
     DateTime? start,
     DateTime? end,
   }) async {
-    await getSubmenu(submenuId: 'submenu_291906'); // Schooling submenu
+    await getSubmenu(submenuId: submenuId); // Schooling submenu
 
     Map<String, dynamic> payload = {
       'form': 'form',
@@ -408,7 +408,7 @@ class IsenAurionClient {
       'form:sidebar': 'form:sidebar',
       'form:j_idt805:j_idt808_view': 'basicDay',
       'javax.faces.ViewState': viewState,
-      'form:sidebar_menuid': '1_3'
+      'form:sidebar_menuid': submenuItemId,
     };
 
     Response response = await Requests.post(
