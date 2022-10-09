@@ -56,10 +56,10 @@ Event parseEvent(Map<String, dynamic> rawEvent) {
       throw Exception(
           'Event is not in the expected format. Could not be parsed.');
     }
-  } else if (data.split('\\n').length == 6 &&
-      RegExp(r'\d\dh\d\d - \d\dh\d\d').hasMatch(data.split('\\n')[4])) {
+  } else if (data.split('\n').length == 6 &&
+      RegExp(r'\d\d:\d\d - \d\d:\d\d').hasMatch(data.split('\n')[4])) {
     // if the event is from ISEN Lille
-    result = data.split('\\n');
+    result = data.split('\n');
     eventJson['room'] = '${result[0]} - ${result[1]}';
     eventJson['subject'] = result[2];
     eventJson['chapter'] = '';
