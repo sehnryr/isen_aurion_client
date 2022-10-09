@@ -1,5 +1,13 @@
 # Changelog
 
+## [v2.3.0-alpha.0](https://github.com/sehnryr/isen_aurion_client/tree/v2.3.0-alpha.0) (2022-10-09)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.2.1...v2.3.0-alpha.0)
+
+**Merged pull requests:**
+
+- fix\(client\): add ISEN Lille support exposed arguments [\#11](https://github.com/sehnryr/isen_aurion_client/pull/11) ([sehnryr](https://github.com/sehnryr))
+
 ## [v2.2.1](https://github.com/sehnryr/isen_aurion_client/tree/v2.2.1) (2022-10-08)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.2.0...v2.2.1)
