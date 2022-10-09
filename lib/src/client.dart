@@ -178,7 +178,7 @@ class IsenAurionClient {
   /// [List]s are in reverse order of request
   Future<List<List>> getReadablePaths(
       {String submenuId = 'submenu_299102'}) async {
-    List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
+    List<Map<String, dynamic>> tree = await getGroupsTree(submenuId: submenuId);
     return convertTree2Paths(tree: tree);
   }
 
