@@ -49,15 +49,6 @@ class IsenAurionClient {
         "The execution parameter could not be found in the response body.");
   }
 
-  /// Get the viewState value from a request.
-  ///
-  /// Throws a [ParameterNotFound] if not found.
-  @protected
-  Future<String> fetchViewState() async {
-    Response response = await Requests.get(serviceUrl, withCredentials: true);
-    return getViewState(response);
-  }
-
   /// Get the form id from [response].
   /// Needed for doing requests.
   ///
@@ -68,15 +59,6 @@ class IsenAurionClient {
         r'chargerSousMenu = function\(\) {PrimeFaces\.ab\({s:"form:j_idt(\d+)"',
         response.content(),
         "The execution parameter could not be found in the response body."));
-  }
-
-  /// Get the form id from a request.
-  ///
-  /// Throws [ParameterNotFound] if the value was not found.
-  @protected
-  Future<int> fetchFormId() async {
-    Response response = await Requests.get(serviceUrl, withCredentials: true);
-    return getFormId(response);
   }
 
   /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
