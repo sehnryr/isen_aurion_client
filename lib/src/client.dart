@@ -7,6 +7,7 @@ import 'package:html/parser.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
 import 'package:isen_aurion_client/src/common.dart';
+import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
 import 'package:isen_aurion_client/event.dart';
 
@@ -22,19 +23,9 @@ class IsenAurionClient {
   // The form id that's also attached to the session
   late final int formId;
 
-  DateTime get defaultStart {
-    var now = DateTime.now();
-    var today = DateTime(now.year, now.month, now.day, 0, 0, 0);
-    return today.subtract(Duration(days: 1 * 7 + now.weekday));
-  }
+  DateTime get defaultStart => Config.defaultStart;
 
-  DateTime get defaultEnd {
-    var now = DateTime.now();
-    var endOfYear = DateTime(now.year, 7, 31, 23, 59, 59);
-    bool newSchoolYear = now.isAfter(endOfYear);
-    var end = DateTime(now.year + (newSchoolYear ? 1 : 0), 7, 31, 23, 59, 59);
-    return end.subtract(Duration(days: end.weekday + 1));
-  }
+  DateTime get defaultEnd => Config.defaultEnd;
 
   // The whole group tree
   List<Map<String, dynamic>> groupsTree = [];
