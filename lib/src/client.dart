@@ -47,11 +47,9 @@ class IsenAurionClient {
   @protected
   String? extractViewState(Response response) {
     var content = response.content();
-    if (content.contains('name="javax.faces.ViewState"')) {
-      return content
-          .split('name="javax.faces.ViewState"')[1]
-          .split('value="')[1]
-          .split('"')[0];
+    var splitter = 'name="javax.faces.ViewState"';
+    if (content.contains(splitter)) {
+      return content.split(splitter)[1].split('value="')[1].split('"')[0];
     }
     return null;
   }
