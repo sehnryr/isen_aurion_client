@@ -62,10 +62,23 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if the value was not found.
   @protected
   int getFormId(Response response) {
-    return int.parse(regexMatch(
-        r'chargerSousMenu = function\(\) {PrimeFaces\.ab\({s:"form:j_idt(\d+)"',
-        response.content(),
-        "The execution parameter could not be found in the response body."));
+    var formId = extractFormId(response);
+    if (formId == null) {
+      throw ParameterNotFound('FormId could not be found.');
+    }
+    return formId;
+  }
+
+  /// Extract the form id from the [response] body.
+  /// Needed for doing requests.
+  @protected
+  int? extractFormId(Response response) {
+    var content = response.content();
+    var splitter = 'chargerSousMenu = function() {PrimeFaces.ab({s:"form:j_idt';
+    if (content.contains(splitter)) {
+      return int.parse(content.split(splitter)[1].split('"')[0]);
+    }
+    return null;
   }
 
   /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
