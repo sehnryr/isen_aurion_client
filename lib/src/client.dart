@@ -87,14 +87,37 @@ class IsenAurionClient {
     return null;
   }
 
+  /// Get the schedule form id from [response].
+  /// Needed for fetching the planning.
+  ///
+  /// Throws [ParameterNotFound] if the value was not found.
+  @protected
+  int getScheduleFormId(Response response) {
+    var formId = extractScheduleFormId(response);
+    if (formId == null) {
+      throw ParameterNotFound('UserScheduleFormId could not be found.');
+    }
+    return formId;
+  }
+
+  /// Extract the schedule form id from the [response] body.
+  /// Needed for fetching the planning.
+  @protected
+  int? extractScheduleFormId(Response response) {
+    var content = response.content();
+    var splitter = '" class="schedule"';
+    if (content.contains(splitter)) {
+      return int.parse(content.split(splitter)[0].split('id="form:j_idt').last);
+    }
+    return null;
+  }
+
   /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
   /// as it is the first id of the groups plannings.
   ///
   /// Throws [ParameterNotFound] if the value couldn't be found.
   Future<List<Map<String, dynamic>>> getSubmenu(
       {String submenuId = 'submenu_299102'}) async {
-    String url = pages.mainMenuUrl;
-
     Map<String, dynamic> payload = {
       'javax.faces.partial.ajax': true,
       'javax.faces.source': 'form:j_idt$formId',
@@ -111,7 +134,7 @@ class IsenAurionClient {
       'webscolaapp.Sidebar.ID_SUBMENU': submenuId
     };
 
-    Response response = await Requests.post(url,
+    Response response = await Requests.post(pages.mainMenuUrl,
         queryParameters: payload, withCredentials: true);
 
     String data = regexMatch(
@@ -236,8 +259,7 @@ class IsenAurionClient {
       'form:sidebar_menuid': groupId
     };
 
-    String url = pages.mainMenuUrl;
-    Response response = await Requests.post(url,
+    Response response = await Requests.post(pages.mainMenuUrl,
         queryParameters: payload, withCredentials: true);
 
     if (!response.headers.containsKey('location')) {
@@ -346,22 +368,20 @@ class IsenAurionClient {
     if (response.statusCode == 302) {
       response = await Requests.get(pages.planningUrl, withCredentials: true);
     }
-    document = parse(response.content()).documentElement!;
 
-    String defaultParam =
-        document.queryXPath('//div[@class="schedule"]/@id').attr!;
+    int scheduleFormId = getScheduleFormId(response);
 
     start ??= defaultStart;
     end ??= defaultEnd;
 
     payload = {
       'javax.faces.partial.ajax': 'true',
-      'javax.faces.source': defaultParam,
-      'javax.faces.partial.execute': defaultParam,
-      'javax.faces.partial.render': defaultParam,
-      defaultParam: defaultParam,
-      '${defaultParam}_start': start.millisecondsSinceEpoch,
-      '${defaultParam}_end': end.millisecondsSinceEpoch,
+      'javax.faces.source': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.execute': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.render': 'form:j_idt$scheduleFormId',
+      'form:j_idt$scheduleFormId': 'form:j_idt$scheduleFormId',
+      'form:j_idt${scheduleFormId}_start': start.millisecondsSinceEpoch,
+      'form:j_idt${scheduleFormId}_end': end.millisecondsSinceEpoch,
       'form': 'form',
       'javax.faces.ViewState': getViewState(response),
     };
@@ -419,22 +439,20 @@ class IsenAurionClient {
     if (response.statusCode == 302) {
       response = await Requests.get(pages.planningUrl, withCredentials: true);
     }
-    var document = parse(response.content()).documentElement!;
 
-    String defaultParam =
-        document.queryXPath('//div[@class="schedule"]/@id').attr!;
+    int scheduleFormId = getScheduleFormId(response);
 
     start ??= defaultStart;
     end ??= defaultEnd;
 
     payload = {
       'javax.faces.partial.ajax': 'true',
-      'javax.faces.source': defaultParam,
-      'javax.faces.partial.execute': defaultParam,
-      'javax.faces.partial.render': defaultParam,
-      defaultParam: defaultParam,
-      '${defaultParam}_start': start.millisecondsSinceEpoch,
-      '${defaultParam}_end': end.millisecondsSinceEpoch,
+      'javax.faces.source': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.execute': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.render': 'form:j_idt$scheduleFormId',
+      'form:j_idt$scheduleFormId': 'form:j_idt$scheduleFormId',
+      'form:j_idt${scheduleFormId}_start': start.millisecondsSinceEpoch,
+      'form:j_idt${scheduleFormId}_end': end.millisecondsSinceEpoch,
       'form': 'form',
       'javax.faces.ViewState': getViewState(response),
     };
