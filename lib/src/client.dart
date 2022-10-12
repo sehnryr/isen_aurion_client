@@ -36,10 +36,23 @@ class IsenAurionClient {
 
   DateTime get defaultEnd => Config.defaultEnd;
 
+  Map<String, dynamic> defaultParameters({required String menuId}) {
+    // this payload form ids seems to be constant (805, 808, 820).
+    return {
+      'form': 'form',
+      'form:sauvegarde': null,
+      'form:largeurDivCenter': null,
+      'form:j_idt820_focus': null,
+      'form:j_idt820_input': null,
+      'form:sidebar': 'form:sidebar',
+      'form:j_idt805:j_idt808_view': 'basicDay',
+      'javax.faces.ViewState': viewState,
+      'form:sidebar_menuid': menuId
+    };
+  }
+
   /// Get the viewstate value from [response].
   /// Needed for fetching the planning.
-  ///
-  /// Returns a [String] if found
   ///
   /// Throws a [ParameterNotFound] if not found
   @protected
@@ -77,12 +90,12 @@ class IsenAurionClient {
     return formId;
   }
 
-  /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
-  /// as it is the first id of the groups plannings.
+  /// Get the submenu [List] from the id.
   ///
   /// Throws [ParameterNotFound] if the value couldn't be found.
-  Future<List<Map<String, dynamic>>> getSubmenu(
-      {String submenuId = 'submenu_299102'}) async {
+  Future<List<Map<String, dynamic>>> getSubmenu({
+    required String submenuId,
+  }) async {
     Map<String, dynamic> payload = {
       'javax.faces.partial.ajax': true,
       'javax.faces.source': 'form:j_idt$formId',
@@ -99,8 +112,11 @@ class IsenAurionClient {
       'webscolaapp.Sidebar.ID_SUBMENU': submenuId
     };
 
-    Response response = await Requests.post(pages.mainMenuUrl,
-        queryParameters: payload, withCredentials: true);
+    Response response = await Requests.post(
+      pages.mainMenuUrl,
+      queryParameters: payload,
+      withCredentials: true,
+    );
 
     String data = regexMatch(
         r'<update id="form:sidebar"><!\[CDATA\[(.*?)\]\]>',
@@ -141,8 +157,10 @@ class IsenAurionClient {
   }
 
   /// Get the whole menu tree recursively. It takes around 20sec to make it.
-  Future<List<Map<String, dynamic>>> getGroupsTree(
-      {String submenuId = 'submenu_299102', bool hasParent = false}) async {
+  Future<List<Map<String, dynamic>>> getGroupsTree({
+    required String submenuId,
+    bool hasParent = false,
+  }) async {
     List<Map<String, dynamic>> tree = await getSubmenu(submenuId: submenuId);
 
     for (var child in tree) {
@@ -158,8 +176,7 @@ class IsenAurionClient {
   /// Get a more manageable tree to work with in form of paths like lists where
   /// the furthest item is first and so on to the nearest. The elements of the
   /// [List]s are in reverse order of request
-  Future<List<List>> getReadablePaths(
-      {String submenuId = 'submenu_299102'}) async {
+  Future<List<List>> getReadablePaths({required String submenuId}) async {
     List<Map<String, dynamic>> tree = await getGroupsTree(submenuId: submenuId);
     return convertTree2Paths(tree: tree);
   }
@@ -187,8 +204,8 @@ class IsenAurionClient {
   /// Get a [List] of the checkboxes before accessing the schedule.
   Future<List<Map<String, dynamic>>> getGroupsSelection({
     required String groupId,
+    required String submenuId,
     List<Map>? path,
-    String submenuId = 'submenu_299102',
   }) async {
     if (path != null) {
       // return if [groupId] is not in [path]
@@ -212,28 +229,21 @@ class IsenAurionClient {
       }
     }
 
-    Map<String, dynamic> payload = {
-      'form': 'form',
-      'form:sauvegarde': null,
-      'form:largeurDivCenter': null,
-      'form:j_idt820_focus': null,
-      'form:j_idt820_input': null,
-      'form:sidebar': 'form:sidebar',
-      'form:j_idt805:j_idt808_view': 'basicDay',
-      'javax.faces.ViewState': viewState,
-      'form:sidebar_menuid': groupId
-    };
-
-    Response response = await Requests.post(pages.mainMenuUrl,
-        queryParameters: payload, withCredentials: true);
+    Response response = await Requests.post(
+      pages.mainMenuUrl,
+      queryParameters: defaultParameters(menuId: groupId),
+      withCredentials: true,
+    );
 
     if (!response.headers.containsKey('location')) {
       throw ParameterNotFound(
           'The request might have failed. Has the menu been loaded?');
     }
 
-    response =
-        await Requests.get(pages.planningChoiceUrl, withCredentials: true);
+    response = await Requests.get(
+      pages.planningChoiceUrl,
+      withCredentials: true,
+    );
 
     var document = parse(response.content()).documentElement!;
 
@@ -262,9 +272,10 @@ class IsenAurionClient {
     DateTime? start,
     DateTime? end,
   }) async {
-    if (response.statusCode == 302) {
-      response = await Requests.get(pages.planningUrl, withCredentials: true);
-    }
+    response = await Requests.get(
+      pages.planningUrl,
+      withCredentials: true,
+    );
 
     int scheduleFormId = getScheduleFormId(response);
 
@@ -283,8 +294,11 @@ class IsenAurionClient {
       'javax.faces.ViewState': getViewState(response),
     };
 
-    response = await Requests.post(pages.planningUrl,
-        queryParameters: payload, withCredentials: true);
+    response = await Requests.post(
+      pages.planningUrl,
+      queryParameters: payload,
+      withCredentials: true,
+    );
 
     var eventsJson = jsonDecode(regexMatch(
         r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
@@ -304,20 +318,32 @@ class IsenAurionClient {
   ///
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
+  ///
+  /// When setting [options], [path] must be set as well.
   Future<List<Event>> getGroupSchedule({
     required String groupId,
+    required String submenuId,
+    required int languageCode, // French: 275805, English: 251378 for ISEN Ouest
     List<Map>? path,
     List<Map>? options,
     DateTime? start,
     DateTime? end,
-    String submenuId = 'submenu_299102',
-    int languageCode = 275805, // French: 275805, English: 251378 for ISEN Ouest
   }) async {
+    // get the group options if [options] is null
     options ??= await getGroupsSelection(
       groupId: groupId,
       path: path,
       submenuId: submenuId,
     );
+
+    // either [path] or the groups tree must be loaded before doing this request
+    // used to get the viewState
+    Response response = await Requests.get(
+      pages.planningChoiceUrl,
+      withCredentials: true,
+    );
+
+    // format the options to be sent in the request in the payload
     String selection = options.map((e) => e['id']).join(',');
 
     var payload = {
@@ -333,12 +359,8 @@ class IsenAurionClient {
       'form:input-nombre-fin': null,
       'form:calendarDebut_input': null,
       'form:calendarFin_input': null,
+      'javax.faces.ViewState': getViewState(response),
     };
-
-    Response response =
-        await Requests.get(pages.planningChoiceUrl, withCredentials: true);
-
-    payload['javax.faces.ViewState'] = getViewState(response);
 
     var document = parse(response.content()).documentElement!;
     var result = document.queryXPath(
@@ -367,9 +389,14 @@ class IsenAurionClient {
     payload[result.attr!.replaceFirst(RegExp(r'_focus$'), '_input')] =
         languageCode;
 
-    response = await Requests.post(pages.planningChoiceUrl,
-        queryParameters: payload, withCredentials: true);
+    response = await Requests.post(
+      pages.planningChoiceUrl,
+      queryParameters: payload,
+      withCredentials: true,
+    );
 
+    // If the request was no correctly redirected and the page is not
+    // the expected one, throw an error.
     if (!(response.headers.containsKey('location') &&
             response.statusCode == 302) &&
         RegExp(r"'form:headerSubview:j_idt40'}").hasMatch(response.content())) {
@@ -388,28 +415,21 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
   Future<List<Event>> getUserSchedule({
-    String submenuId = 'submenu_291906',
-    String submenuItemId = '1_3', // form:sidebar_menuid
+    required String submenuId,
+    required String submenuItemId, // form:sidebar_menuid
     DateTime? start,
     DateTime? end,
   }) async {
     await getSubmenu(submenuId: submenuId); // Schooling submenu
 
-    Map<String, dynamic> payload = {
-      'form': 'form',
-      'form:sauvegarde': null,
-      'form:largeurDivCenter': null,
-      'form:j_idt820_focus': null,
-      'form:j_idt820_input': null,
-      'form:sidebar': 'form:sidebar',
-      'form:j_idt805:j_idt808_view': 'basicDay',
-      'javax.faces.ViewState': viewState,
-      'form:sidebar_menuid': submenuItemId,
-    };
+    Response response = await Requests.post(
+      pages.mainMenuUrl,
+      queryParameters: defaultParameters(menuId: submenuItemId),
+      withCredentials: true,
+    );
 
-    Response response = await Requests.post(pages.mainMenuUrl,
-        queryParameters: payload, withCredentials: true);
-
+    // If the request was no correctly redirected and the page is not
+    // the expected one, throw an error.
     if (!(response.headers.containsKey('location') &&
             response.statusCode == 302) &&
         !RegExp(r"<title>Mon planning").hasMatch(response.content())) {
@@ -430,9 +450,11 @@ class IsenAurionClient {
   Future<void> login(String username, String password) async {
     String loginUrl = pages.loginUrl;
 
-    Response response = await Requests.post(loginUrl,
-        body: {'username': username, 'password': password},
-        withCredentials: true);
+    Response response = await Requests.post(
+      loginUrl,
+      body: {'username': username, 'password': password},
+      withCredentials: true,
+    );
 
     if (!response.headers.containsKey('location') &&
         !RegExp(r"<title>Page d'accueil").hasMatch(response.content())) {
@@ -440,8 +462,10 @@ class IsenAurionClient {
     }
 
     // Retrieve the session attached variables
-    Response dummyResponse =
-        await Requests.get(pages.serviceUrl, withCredentials: true);
+    Response dummyResponse = await Requests.get(
+      pages.serviceUrl,
+      withCredentials: true,
+    );
 
     viewState = getViewState(dummyResponse);
     formId = getFormId(dummyResponse);
