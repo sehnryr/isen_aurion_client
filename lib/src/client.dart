@@ -9,19 +9,8 @@ import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 import 'package:isen_aurion_client/src/common.dart';
 import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
+import 'package:isen_aurion_client/src/pages.dart';
 import 'package:isen_aurion_client/event.dart';
-
-class Pages {
-  final String _serviceUrl;
-
-  Pages(this._serviceUrl);
-
-  String get loginUrl => '$serviceUrl/login';
-  String get mainMenuUrl => '$serviceUrl/faces/MainMenuPage.xhtml';
-  String get planningChoiceUrl => '$serviceUrl/faces/ChoixPlanning.xhtml';
-  String get planningUrl => '$serviceUrl/faces/Planning.xhtml';
-  String get serviceUrl => _serviceUrl;
-}
 
 class IsenAurionClient {
   factory IsenAurionClient({required String serviceUrl}) {
