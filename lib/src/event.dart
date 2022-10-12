@@ -4,19 +4,12 @@ part 'event.g.dart';
 
 /// Possible event types
 enum EventType {
-  @JsonValue("course")
   course,
-  @JsonValue("exam")
   exam,
-  @JsonValue("leave")
   leave,
-  @JsonValue("meeting")
   meeting,
-  @JsonValue("practicalWork")
   practicalWork,
-  @JsonValue("supervisedWork")
   supervisedWork,
-  @JsonValue("undefined")
   undefined,
 }
 

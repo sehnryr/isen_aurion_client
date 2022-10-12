@@ -1,5 +1,5 @@
-import 'package:isen_aurion_client/event.dart';
 import 'package:isen_aurion_client/src/error.dart';
+import 'package:isen_aurion_client/src/event.dart';
 
 String regexMatch(String source, String input, String? errorMessage) {
   var pattern = RegExp(source);
