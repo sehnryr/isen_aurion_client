@@ -14,15 +14,15 @@ import 'package:isen_aurion_client/src/error.dart';
 import 'package:isen_aurion_client/src/event.dart';
 import 'package:isen_aurion_client/src/response.dart';
 
-class IsenAurionClient {
-  factory IsenAurionClient({
+class AurionClient {
+  factory AurionClient({
     required int languageCode,
     required String schoolingId,
     required String userPlanningId,
     required String groupsPlanningsId,
     required String serviceUrl,
   }) {
-    return IsenAurionClient._internal(
+    return AurionClient._internal(
       AurionMenu(
           languageCode: languageCode,
           schoolingId: schoolingId,
@@ -32,7 +32,7 @@ class IsenAurionClient {
     );
   }
 
-  IsenAurionClient._internal(this.menu, this.pages);
+  AurionClient._internal(this.menu, this.pages);
 
   // The ids of the menus
   final AurionMenu menu;
