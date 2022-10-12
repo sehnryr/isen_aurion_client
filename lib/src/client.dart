@@ -11,11 +11,30 @@ import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
 import 'package:isen_aurion_client/event.dart';
 
+class Pages {
+  final String _serviceUrl;
+
+  Pages(this._serviceUrl);
+
+  String get loginUrl => '$serviceUrl/login';
+  String get mainMenuUrl => '$serviceUrl/faces/MainMenuPage.xhtml';
+  String get planningChoiceUrl => '$serviceUrl/faces/ChoixPlanning.xhtml';
+  String get planningUrl => '$serviceUrl/faces/Planning.xhtml';
+  String get serviceUrl => _serviceUrl;
+}
+
 class IsenAurionClient {
-  IsenAurionClient({required this.serviceUrl});
+  factory IsenAurionClient({required String serviceUrl}) {
+    return IsenAurionClient._internal(Pages(serviceUrl));
+  }
+
+  IsenAurionClient._internal(this.pages);
+
+  // The pages of the Aurion website
+  final Pages pages;
 
   // The service url
-  final String serviceUrl;
+  String get serviceUrl => pages.serviceUrl;
 
   // The viewState string that's attached to the session
   late final String viewState;
@@ -85,7 +104,7 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if the value couldn't be found.
   Future<List<Map<String, dynamic>>> getSubmenu(
       {String submenuId = 'submenu_299102'}) async {
-    String url = "$serviceUrl/faces/MainMenuPage.xhtml";
+    String url = pages.mainMenuUrl;
 
     Map<String, dynamic> payload = {
       'javax.faces.partial.ajax': true,
@@ -228,7 +247,7 @@ class IsenAurionClient {
       'form:sidebar_menuid': groupId
     };
 
-    String url = '$serviceUrl/faces/MainMenuPage.xhtml';
+    String url = pages.mainMenuUrl;
     Response response = await Requests.post(url,
         queryParameters: payload, withCredentials: true);
 
@@ -237,8 +256,8 @@ class IsenAurionClient {
           'The request might have failed. Has the menu been loaded?');
     }
 
-    response = await Requests.get('$serviceUrl/faces/ChoixPlanning.xhtml',
-        withCredentials: true);
+    response =
+        await Requests.get(pages.planningChoiceUrl, withCredentials: true);
 
     var document = parse(response.content()).documentElement!;
 
@@ -294,9 +313,8 @@ class IsenAurionClient {
       'form:calendarFin_input': null,
     };
 
-    Response response = await Requests.get(
-        '$serviceUrl/faces/ChoixPlanning.xhtml',
-        withCredentials: true);
+    Response response =
+        await Requests.get(pages.planningChoiceUrl, withCredentials: true);
 
     payload['javax.faces.ViewState'] = getViewState(response);
 
@@ -327,7 +345,7 @@ class IsenAurionClient {
     payload[result.attr!.replaceFirst(RegExp(r'_focus$'), '_input')] =
         languageCode;
 
-    response = await Requests.post('$serviceUrl/faces/ChoixPlanning.xhtml',
+    response = await Requests.post(pages.planningChoiceUrl,
         queryParameters: payload, withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
@@ -337,8 +355,7 @@ class IsenAurionClient {
     }
 
     if (response.statusCode == 302) {
-      response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
-          withCredentials: true);
+      response = await Requests.get(pages.planningUrl, withCredentials: true);
     }
     document = parse(response.content()).documentElement!;
 
@@ -360,7 +377,7 @@ class IsenAurionClient {
       'javax.faces.ViewState': getViewState(response),
     };
 
-    response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
+    response = await Requests.post(pages.planningUrl,
         queryParameters: payload, withCredentials: true);
 
     var eventsJson = jsonDecode(regexMatch(
@@ -401,10 +418,8 @@ class IsenAurionClient {
       'form:sidebar_menuid': submenuItemId,
     };
 
-    Response response = await Requests.post(
-        '$serviceUrl/faces/MainMenuPage.xhtml',
-        queryParameters: payload,
-        withCredentials: true);
+    Response response = await Requests.post(pages.mainMenuUrl,
+        queryParameters: payload, withCredentials: true);
 
     if (!(response.headers.containsKey('location') &&
             response.statusCode == 302) &&
@@ -413,8 +428,7 @@ class IsenAurionClient {
     }
 
     if (response.statusCode == 302) {
-      response = await Requests.get('$serviceUrl/faces/Planning.xhtml',
-          withCredentials: true);
+      response = await Requests.get(pages.planningUrl, withCredentials: true);
     }
     var document = parse(response.content()).documentElement!;
 
@@ -436,7 +450,7 @@ class IsenAurionClient {
       'javax.faces.ViewState': getViewState(response),
     };
 
-    response = await Requests.post('$serviceUrl/faces/Planning.xhtml',
+    response = await Requests.post(pages.planningUrl,
         queryParameters: payload, withCredentials: true);
 
     var eventsJson = jsonDecode(regexMatch(
@@ -458,7 +472,7 @@ class IsenAurionClient {
   ///
   /// Throws and [AuthenticationException] if one of the credentials is wrong.
   Future<void> login(String username, String password) async {
-    String loginUrl = "$serviceUrl/login";
+    String loginUrl = pages.loginUrl;
 
     Response response = await Requests.post(loginUrl,
         body: {'username': username, 'password': password},
@@ -471,7 +485,7 @@ class IsenAurionClient {
 
     // Retrieve the session attached variables
     Response dummyResponse =
-        await Requests.get(serviceUrl, withCredentials: true);
+        await Requests.get(pages.serviceUrl, withCredentials: true);
 
     viewState = getViewState(dummyResponse);
     formId = getFormId(dummyResponse);
