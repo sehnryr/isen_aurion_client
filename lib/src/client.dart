@@ -11,6 +11,7 @@ import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
 import 'package:isen_aurion_client/src/event.dart';
 import 'package:isen_aurion_client/src/pages.dart';
+import 'package:isen_aurion_client/src/response.dart';
 
 class IsenAurionClient {
   factory IsenAurionClient({required String serviceUrl}) {
@@ -43,23 +44,11 @@ class IsenAurionClient {
   /// Throws a [ParameterNotFound] if not found
   @protected
   String getViewState(Response response) {
-    var viewState = extractViewState(response);
+    var viewState = response.viewState;
     if (viewState == null) {
       throw ParameterNotFound('ViewState could not be found.');
     }
     return viewState;
-  }
-
-  /// Extract the viewState value from the [response] body.
-  /// Needed for fetching the planning.
-  @protected
-  String? extractViewState(Response response) {
-    var content = response.content();
-    var splitter = 'name="javax.faces.ViewState"';
-    if (content.contains(splitter)) {
-      return content.split(splitter)[1].split('value="')[1].split('"')[0];
-    }
-    return null;
   }
 
   /// Get the form id from [response].
@@ -68,23 +57,11 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if the value was not found.
   @protected
   int getFormId(Response response) {
-    var formId = extractFormId(response);
+    var formId = response.formId;
     if (formId == null) {
       throw ParameterNotFound('FormId could not be found.');
     }
     return formId;
-  }
-
-  /// Extract the form id from the [response] body.
-  /// Needed for doing requests.
-  @protected
-  int? extractFormId(Response response) {
-    var content = response.content();
-    var splitter = 'chargerSousMenu = function() {PrimeFaces.ab({s:"form:j_idt';
-    if (content.contains(splitter)) {
-      return int.parse(content.split(splitter)[1].split('"')[0]);
-    }
-    return null;
   }
 
   /// Get the schedule form id from [response].
@@ -93,23 +70,11 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if the value was not found.
   @protected
   int getScheduleFormId(Response response) {
-    var formId = extractScheduleFormId(response);
+    var formId = response.scheduleFormId;
     if (formId == null) {
-      throw ParameterNotFound('UserScheduleFormId could not be found.');
+      throw ParameterNotFound('ScheduleFormId could not be found.');
     }
     return formId;
-  }
-
-  /// Extract the schedule form id from the [response] body.
-  /// Needed for fetching the planning.
-  @protected
-  int? extractScheduleFormId(Response response) {
-    var content = response.content();
-    var splitter = '" class="schedule"';
-    if (content.contains(splitter)) {
-      return int.parse(content.split(splitter)[0].split('id="form:j_idt').last);
-    }
-    return null;
   }
 
   /// Get the submenu [List] from the id. ['submenu_299102'] is the default id
