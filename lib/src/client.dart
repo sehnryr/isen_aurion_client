@@ -7,11 +7,11 @@ import 'package:html/parser.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
 import 'package:isen_aurion_client/src/aurion_menu.dart';
+import 'package:isen_aurion_client/src/aurion_pages.dart';
 import 'package:isen_aurion_client/src/common.dart';
 import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
 import 'package:isen_aurion_client/src/event.dart';
-import 'package:isen_aurion_client/src/pages.dart';
 import 'package:isen_aurion_client/src/response.dart';
 
 class IsenAurionClient {
@@ -28,7 +28,7 @@ class IsenAurionClient {
           schoolingId: schoolingId,
           userPlanningId: userPlanningId,
           groupsPlanningsId: groupsPlanningsId),
-      Pages(serviceUrl),
+      AurionPages(serviceUrl),
     );
   }
 
@@ -38,7 +38,7 @@ class IsenAurionClient {
   final AurionMenu menu;
 
   // The pages of the Aurion website
-  final Pages pages;
+  final AurionPages pages;
 
   // The service url
   String get serviceUrl => pages.serviceUrl;

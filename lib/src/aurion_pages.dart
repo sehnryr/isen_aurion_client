@@ -1,7 +1,7 @@
-class Pages {
+class AurionPages {
   final String _serviceUrl;
 
-  Pages(this._serviceUrl);
+  AurionPages(this._serviceUrl);
 
   String get loginUrl => '$serviceUrl/login';
   String get mainMenuUrl => '$serviceUrl/faces/MainMenuPage.xhtml';
