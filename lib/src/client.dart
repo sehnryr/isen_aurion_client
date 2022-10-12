@@ -35,15 +35,25 @@ class IsenAurionClient {
   /// Throws a [ParameterNotFound] if not found
   @protected
   String getViewState(Response response) {
-    var document = parse(response.content()).documentElement!;
-    var result =
-        document.queryXPath("//input[@name='javax.faces.ViewState']/@value");
-
-    if (result.attr != null) {
-      return result.attr!;
+    var viewState = extractViewState(response);
+    if (viewState == null) {
+      throw ParameterNotFound('ViewState could not be found.');
     }
-    throw ParameterNotFound(
-        "The execution parameter could not be found in the response body.");
+    return viewState;
+  }
+
+  /// Extract the viewState value from the [response] body.
+  /// Needed for fetching the planning.
+  @protected
+  String? extractViewState(Response response) {
+    var content = response.content();
+    if (content.contains('name="javax.faces.ViewState"')) {
+      return content
+          .split('name="javax.faces.ViewState"')[1]
+          .split('value="')[1]
+          .split('"')[0];
+    }
+    return null;
   }
 
   /// Get the form id from [response].
