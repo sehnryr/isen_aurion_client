@@ -36,6 +36,9 @@ class IsenAurionClient {
 
   DateTime get defaultEnd => Config.defaultEnd;
 
+  // List of all the loaded paths
+  List<List<Map>> paths = [];
+
   Map<String, dynamic> defaultParameters({required String menuId}) {
     // this payload form ids seems to be constant (805, 808, 820).
     return {
@@ -156,6 +159,52 @@ class IsenAurionClient {
     return submenus;
   }
 
+  /// Get the path for a given [groupId].
+  ///
+  /// Return `null` if not found.
+  List<Map>? getPath(String groupId) {
+    var path = paths.firstWhere((element) => element[0]['id'] == groupId,
+        orElse: () => []);
+    return path.isNotEmpty ? path : null;
+  }
+
+  /// Check if the [path] is loaded or not
+  bool isPathLoaded(List<Map> path) {
+    return paths.any((element) {
+      if (element.length != path.length) return false;
+      for (int i = 0; i < element.length; i++) {
+        if (element[i]['id'] != path[i]['id']) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }
+
+  /// Load the path for accessing Aurion.
+  ///
+  /// Example:
+  /// ```
+  /// [
+  ///   {'name': 'CIR 2', 'id': '2_6_2_1'},
+  ///   {'name': 'CIR Nantes', 'id': 'submenu_2853538'},
+  ///   {'name': 'CIR', 'id': 'submenu_299116'},
+  ///   {'name': 'Groups', 'id': 'submenu_299102'},
+  /// ]
+  /// ```
+  Future<void> loadPath(List<Map> path) async {
+    if (path.isNotEmpty &&
+        !path.any((pathNode) => !pathNode.containsKey('id')) &&
+        getPath(path[0]['id']) == null) {
+      var normalPath = path.reversed.toList();
+      normalPath.removeLast();
+      for (var pathNode in normalPath) {
+        await getSubmenu(submenuId: pathNode['id']);
+      }
+      paths.add(path);
+    }
+  }
+
   /// Get the whole menu tree recursively. It takes around 20sec to make it.
   Future<List<Map<String, dynamic>>> getGroupsTree({
     required String submenuId,
@@ -170,6 +219,7 @@ class IsenAurionClient {
       }
     }
 
+    paths = convertTree2Paths(tree: tree);
     return tree;
   }
 
@@ -211,20 +261,15 @@ class IsenAurionClient {
       // return if [groupId] is not in [path]
       if (!path.any((pathNode) => pathNode['id'] == groupId)) {
         return [];
-      } else if (path.isNotEmpty) {
-        path = path.reversed.toList();
-        path.removeLast();
-        for (var pathNode in path) {
-          await getSubmenu(submenuId: pathNode['id']);
-        }
+      } else if (!isPathLoaded(path)) {
+        await loadPath(path);
       }
+    } else if (getPath(groupId) != null) {
     } else {
-      var groupsTree = await getGroupsTree(submenuId: submenuId);
+      await getGroupsTree(submenuId: submenuId);
 
-      // return if [groupId] is not in [groupsTree]
-      bool pathExist = convertTree2Paths(tree: groupsTree)
-          .any((path) => path.any((pathNode) => pathNode['id'] == groupId));
-      if (!pathExist) {
+      // return if [groupId] is not in [paths]
+      if (!paths.any((element) => element[0]['id'] == groupId)) {
         return [];
       }
     }
@@ -420,7 +465,12 @@ class IsenAurionClient {
     DateTime? start,
     DateTime? end,
   }) async {
-    await getSubmenu(submenuId: submenuId); // Schooling submenu
+    if (getPath(submenuId) == null) {
+      await getSubmenu(submenuId: submenuId); // Schooling submenu
+      paths.add([
+        {'id': submenuId, 'name': 'Schooling'}
+      ]);
+    }
 
     Response response = await Requests.post(
       pages.mainMenuUrl,
