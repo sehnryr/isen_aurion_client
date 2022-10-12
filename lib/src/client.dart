@@ -6,6 +6,7 @@ import 'package:requests/requests.dart';
 import 'package:html/parser.dart';
 import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 
+import 'package:isen_aurion_client/src/aurion_menu.dart';
 import 'package:isen_aurion_client/src/common.dart';
 import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
@@ -14,11 +15,27 @@ import 'package:isen_aurion_client/src/pages.dart';
 import 'package:isen_aurion_client/src/response.dart';
 
 class IsenAurionClient {
-  factory IsenAurionClient({required String serviceUrl}) {
-    return IsenAurionClient._internal(Pages(serviceUrl));
+  factory IsenAurionClient({
+    required int languageCode,
+    required String schoolingId,
+    required String userPlanningId,
+    required String groupsPlanningsId,
+    required String serviceUrl,
+  }) {
+    return IsenAurionClient._internal(
+      AurionMenu(
+          languageCode: languageCode,
+          schoolingId: schoolingId,
+          userPlanningId: userPlanningId,
+          groupsPlanningsId: groupsPlanningsId),
+      Pages(serviceUrl),
+    );
   }
 
-  IsenAurionClient._internal(this.pages);
+  IsenAurionClient._internal(this.menu, this.pages);
+
+  // The ids of the menus
+  final AurionMenu menu;
 
   // The pages of the Aurion website
   final Pages pages;
@@ -33,11 +50,11 @@ class IsenAurionClient {
   late final int formId;
 
   DateTime get defaultStart => Config.defaultStart;
-
   DateTime get defaultEnd => Config.defaultEnd;
 
   // List of all the loaded paths
-  List<List<Map>> paths = [];
+  List<List<Map>> get paths => menu.menus;
+  set paths(List<List<Map>> value) => menu.menus = value;
 
   Map<String, dynamic> defaultParameters({required String menuId}) {
     // this payload form ids seems to be constant (805, 808, 820).
@@ -254,7 +271,6 @@ class IsenAurionClient {
   /// Get a [List] of the checkboxes before accessing the schedule.
   Future<List<Map<String, dynamic>>> getGroupsSelection({
     required String groupId,
-    required String submenuId,
     List<Map>? path,
   }) async {
     if (path != null) {
@@ -266,7 +282,7 @@ class IsenAurionClient {
       }
     } else if (getPath(groupId) != null) {
     } else {
-      await getGroupsTree(submenuId: submenuId);
+      await getGroupsTree(submenuId: menu.groupsPlanningsId);
 
       // return if [groupId] is not in [paths]
       if (!paths.any((element) => element[0]['id'] == groupId)) {
@@ -367,8 +383,6 @@ class IsenAurionClient {
   /// When setting [options], [path] must be set as well.
   Future<List<Event>> getGroupSchedule({
     required String groupId,
-    required String submenuId,
-    required int languageCode, // French: 275805, English: 251378 for ISEN Ouest
     List<Map>? path,
     List<Map>? options,
     DateTime? start,
@@ -378,7 +392,6 @@ class IsenAurionClient {
     options ??= await getGroupsSelection(
       groupId: groupId,
       path: path,
-      submenuId: submenuId,
     );
 
     // either [path] or the groups tree must be loaded before doing this request
@@ -432,7 +445,7 @@ class IsenAurionClient {
         '//div[@class="listeLangues"]//input[starts-with(@name, "form")]/@name');
     payload[result.attr!] = null;
     payload[result.attr!.replaceFirst(RegExp(r'_focus$'), '_input')] =
-        languageCode;
+        menu.languageCode;
 
     response = await Requests.post(
       pages.planningChoiceUrl,
@@ -460,21 +473,19 @@ class IsenAurionClient {
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
   Future<List<Event>> getUserSchedule({
-    required String submenuId,
-    required String submenuItemId, // form:sidebar_menuid
     DateTime? start,
     DateTime? end,
   }) async {
-    if (getPath(submenuId) == null) {
-      await getSubmenu(submenuId: submenuId); // Schooling submenu
+    if (getPath(menu.schoolingId) == null) {
+      await getSubmenu(submenuId: menu.schoolingId); // Schooling submenu
       paths.add([
-        {'id': submenuId, 'name': 'Schooling'}
+        {'id': menu.schoolingId, 'name': 'Schooling'}
       ]);
     }
 
     Response response = await Requests.post(
       pages.mainMenuUrl,
-      queryParameters: defaultParameters(menuId: submenuItemId),
+      queryParameters: defaultParameters(menuId: menu.userPlanningId),
       withCredentials: true,
     );
 
