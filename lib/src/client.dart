@@ -289,11 +289,57 @@ class IsenAurionClient {
     return options;
   }
 
+  /// Get the schedule from [response].
+  /// Used by [getSgetGroupSchedulechedule] and [getUserSchedule].
+  @protected
+  Future<List<Event>> getSchedule({
+    required Response response,
+    DateTime? start,
+    DateTime? end,
+  }) async {
+    if (response.statusCode == 302) {
+      response = await Requests.get(pages.planningUrl, withCredentials: true);
+    }
+
+    int scheduleFormId = getScheduleFormId(response);
+
+    start ??= defaultStart;
+    end ??= defaultEnd;
+
+    var payload = {
+      'javax.faces.partial.ajax': 'true',
+      'javax.faces.source': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.execute': 'form:j_idt$scheduleFormId',
+      'javax.faces.partial.render': 'form:j_idt$scheduleFormId',
+      'form:j_idt$scheduleFormId': 'form:j_idt$scheduleFormId',
+      'form:j_idt${scheduleFormId}_start': start.millisecondsSinceEpoch,
+      'form:j_idt${scheduleFormId}_end': end.millisecondsSinceEpoch,
+      'form': 'form',
+      'javax.faces.ViewState': getViewState(response),
+    };
+
+    response = await Requests.post(pages.planningUrl,
+        queryParameters: payload, withCredentials: true);
+
+    var eventsJson = jsonDecode(regexMatch(
+        r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
+        response.content(),
+        'Schedule could not be extracted from the body content.'));
+
+    List<Event> schedule = [];
+
+    for (var eventJson in eventsJson) {
+      schedule.add(parseEvent(eventJson));
+    }
+
+    return schedule;
+  }
+
   /// Get the schedule with all the options checked by default.
   ///
   /// Throws [ParameterNotFound] if Aurion's schedule is not in the
   /// expected format.
-  Future<List<Event>> getSchedule({
+  Future<List<Event>> getGroupSchedule({
     required String groupId,
     List<Map>? path,
     List<Map>? options,
@@ -365,42 +411,11 @@ class IsenAurionClient {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    if (response.statusCode == 302) {
-      response = await Requests.get(pages.planningUrl, withCredentials: true);
-    }
-
-    int scheduleFormId = getScheduleFormId(response);
-
-    start ??= defaultStart;
-    end ??= defaultEnd;
-
-    payload = {
-      'javax.faces.partial.ajax': 'true',
-      'javax.faces.source': 'form:j_idt$scheduleFormId',
-      'javax.faces.partial.execute': 'form:j_idt$scheduleFormId',
-      'javax.faces.partial.render': 'form:j_idt$scheduleFormId',
-      'form:j_idt$scheduleFormId': 'form:j_idt$scheduleFormId',
-      'form:j_idt${scheduleFormId}_start': start.millisecondsSinceEpoch,
-      'form:j_idt${scheduleFormId}_end': end.millisecondsSinceEpoch,
-      'form': 'form',
-      'javax.faces.ViewState': getViewState(response),
-    };
-
-    response = await Requests.post(pages.planningUrl,
-        queryParameters: payload, withCredentials: true);
-
-    var eventsJson = jsonDecode(regexMatch(
-        r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
-        response.content(),
-        'Schedule could not be extracted from the body content.'));
-
-    List<Event> schedule = [];
-
-    for (var eventJson in eventsJson) {
-      schedule.add(parseEvent(eventJson));
-    }
-
-    return schedule;
+    return getSchedule(
+      response: response,
+      start: start,
+      end: end,
+    );
   }
 
   /// Get the user's schedule with all the options checked by default.
@@ -436,42 +451,11 @@ class IsenAurionClient {
       throw ParameterNotFound('The payload might not be right.');
     }
 
-    if (response.statusCode == 302) {
-      response = await Requests.get(pages.planningUrl, withCredentials: true);
-    }
-
-    int scheduleFormId = getScheduleFormId(response);
-
-    start ??= defaultStart;
-    end ??= defaultEnd;
-
-    payload = {
-      'javax.faces.partial.ajax': 'true',
-      'javax.faces.source': 'form:j_idt$scheduleFormId',
-      'javax.faces.partial.execute': 'form:j_idt$scheduleFormId',
-      'javax.faces.partial.render': 'form:j_idt$scheduleFormId',
-      'form:j_idt$scheduleFormId': 'form:j_idt$scheduleFormId',
-      'form:j_idt${scheduleFormId}_start': start.millisecondsSinceEpoch,
-      'form:j_idt${scheduleFormId}_end': end.millisecondsSinceEpoch,
-      'form': 'form',
-      'javax.faces.ViewState': getViewState(response),
-    };
-
-    response = await Requests.post(pages.planningUrl,
-        queryParameters: payload, withCredentials: true);
-
-    var eventsJson = jsonDecode(regexMatch(
-        r'<!\[CDATA\[{"events" : (\[.*?\])}\]\]><\/update>',
-        response.content(),
-        'Schedule could not be extracted from the body content.'));
-
-    List<Event> schedule = [];
-
-    for (var eventJson in eventsJson) {
-      schedule.add(parseEvent(eventJson));
-    }
-
-    return schedule;
+    return getSchedule(
+      response: response,
+      start: start,
+      end: end,
+    );
   }
 
   /// Login to Aurion with [username] and [password] by storing the connection
