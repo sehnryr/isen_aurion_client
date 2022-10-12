@@ -9,8 +9,8 @@ import 'package:xpath_selector_html_parser/xpath_selector_html_parser.dart';
 import 'package:isen_aurion_client/src/common.dart';
 import 'package:isen_aurion_client/src/config.dart';
 import 'package:isen_aurion_client/src/error.dart';
+import 'package:isen_aurion_client/src/event.dart';
 import 'package:isen_aurion_client/src/pages.dart';
-import 'package:isen_aurion_client/event.dart';
 
 class IsenAurionClient {
   factory IsenAurionClient({required String serviceUrl}) {
