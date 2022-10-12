@@ -27,9 +27,6 @@ class IsenAurionClient {
 
   DateTime get defaultEnd => Config.defaultEnd;
 
-  // The whole group tree
-  List<Map<String, dynamic>> groupsTree = [];
-
   /// Get the viewstate value from [response].
   /// Needed for fetching the planning.
   ///
@@ -138,11 +135,6 @@ class IsenAurionClient {
       }
     }
 
-    // Set the groups tree every time the initial [getGroupsTree] is called.
-    if (!hasParent) {
-      groupsTree = tree;
-    }
-
     return tree;
   }
 
@@ -156,13 +148,13 @@ class IsenAurionClient {
   }
 
   /// Converts the groups tree to paths
-  List<List> convertTree2Paths({required List<Map> tree}) {
-    List<List> paths = [];
+  List<List<Map>> convertTree2Paths({required List<Map> tree}) {
+    List<List<Map>> paths = [];
 
     for (var node in tree) {
       Map pathNode = {'name': node['name'], 'id': node['id']};
       if (node.containsKey('children')) {
-        List<List> children = convertTree2Paths(tree: node['children']);
+        List<List<Map>> children = convertTree2Paths(tree: node['children']);
         for (var child in children) {
           child.add(pathNode);
           paths.add(child);
@@ -175,38 +167,32 @@ class IsenAurionClient {
     return paths;
   }
 
-  /// Get or load the group tree
-  Future<List<Map<String, dynamic>>> getOrLoadGroupTree(
-      {String submenuId = 'submenu_299102'}) async {
-    return groupsTree.isEmpty
-        ? await getGroupsTree(submenuId: submenuId)
-        : groupsTree;
-  }
-
   /// Get a [List] of the checkboxes before accessing the schedule.
   Future<List<Map<String, dynamic>>> getGroupsSelection({
     required String groupId,
     List<Map>? path,
     String submenuId = 'submenu_299102',
   }) async {
-    // return if [groupId] is not in [path]
-    if (path != null &&
-        path
-            .firstWhere((pathNode) => pathNode['id'] == groupId,
-                orElse: () => {})
-            .isEmpty) {
-      return [];
-    } else if (path != null &&
-        path.isNotEmpty &&
-        (groupsTree.isEmpty ||
-            convertTree2Paths(tree: groupsTree).contains(path))) {
-      path = path.reversed.toList();
-      path.removeLast();
-      for (var pathNode in path) {
-        await getSubmenu(submenuId: pathNode['id']);
+    if (path != null) {
+      // return if [groupId] is not in [path]
+      if (!path.any((pathNode) => pathNode['id'] == groupId)) {
+        return [];
+      } else if (path.isNotEmpty) {
+        path = path.reversed.toList();
+        path.removeLast();
+        for (var pathNode in path) {
+          await getSubmenu(submenuId: pathNode['id']);
+        }
       }
     } else {
-      await getOrLoadGroupTree(submenuId: submenuId);
+      var groupsTree = await getGroupsTree(submenuId: submenuId);
+
+      // return if [groupId] is not in [groupsTree]
+      bool pathExist = convertTree2Paths(tree: groupsTree)
+          .any((path) => path.any((pathNode) => pathNode['id'] == groupId));
+      if (!pathExist) {
+        return [];
+      }
     }
 
     Map<String, dynamic> payload = {
