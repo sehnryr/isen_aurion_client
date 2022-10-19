@@ -1,5 +1,9 @@
 # Changelog
 
+## [v3.0.0-alpha.1](https://github.com/sehnryr/isen_aurion_client/tree/v3.0.0-alpha.1) (2022-10-19)
+
+[Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v3.0.0-alpha.0...v3.0.0-alpha.1)
+
 ## [v3.0.0-alpha.0](https://github.com/sehnryr/isen_aurion_client/tree/v3.0.0-alpha.0) (2022-10-12)
 
 [Full Changelog](https://github.com/sehnryr/isen_aurion_client/compare/v2.3.0...v3.0.0-alpha.0)
