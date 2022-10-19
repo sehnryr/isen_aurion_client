@@ -7,7 +7,7 @@ environment:
     sdk: ">=2.17.6 <3.0.0"
 
 dependencies:
-    requests: ^4.7.0
+    requests: ^4.8.0-alpha.0
     html: ^0.15.0
     xpath_selector_html_parser: ^3.0.0
     http: ^0.13.5
